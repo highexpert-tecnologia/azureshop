@@ -53,13 +53,13 @@ DECLARE @catalog TABLE (
 );
 
 INSERT INTO @catalog (name, legacy_name, description, price, image, stock) VALUES
-  (N'Mochila Azure Architect', N'Mochila Cloud', N'Mochila para acompanhar a jornada do Arquiteto Azure.', 249.90, N'/products/Mochila_Azure_Architect.png', 20),
-  (N'Caneca Arquiteto Azure & AI', N'Caneca Arquiteto', N'Caneca para acompanhar estudos de Azure e Inteligencia Artificial.', 79.90, N'/products/Caneca_Arquiteto_Azure_AI.png', 35),
-  (N'Caneca Azure Expert', NULL, N'Caneca da comunidade Azure Expert.', 79.90, N'/products/Caneca_Azure_Expert.png', 35),
-  (N'Caderno Azure Architect & AI', N'Caderno AI', N'Caderno para ideias, prompts e diagramas de arquitetura.', 54.90, N'/products/Caderno_Azure_Architect_AI.png', 50),
-  (N'Camiseta Azure Expert', NULL, N'Camiseta Azure Expert para a comunidade Cloud.', 119.90, N'/products/Camiseta_Azure_Expert.png', 25),
-  (N'Camiseta Azure Architect', N'Camiseta Azure', N'Camiseta da Imersao Arquiteto Azure.', 119.90, N'/products/Camiseta_Azure_Architect.png', 25),
-  (N'Camiseta Microsoft Certified Expert', NULL, N'Camiseta Microsoft Certified Expert.', 119.90, N'/products/Camiseta_Microsoft_Certified_Expert.png', 25);
+  (N'Mochila Arquiteto Azure', N'Mochila Azure Architect', N'Mochila premium para profissionais de Cloud, Azure e arquitetura.', 249.90, N'/products/mochila_tech_azure_arquiteto.png', 20),
+  (N'Caneca Mentoria Arquiteto Azure', N'Caneca Arquiteto Azure & AI', N'Caneca exclusiva da Mentoria Arquiteto Azure.', 79.90, N'/products/caneca_preta_mentoria_arquiteto_azure.png', 35),
+  (N'Caneca Pós-Graduação Arquitetura de Azure com AI', N'Caneca Azure Expert', N'Caneca exclusiva da Pós-Graduação Arquitetura de Azure com AI.', 79.90, N'/products/caneca_azure_ai_pós_graduação_em_azul_neon.png', 35),
+  (N'Caderno Pós-Graduação Arquitetura de Azure com AI', N'Caderno Azure Architect & AI', N'Caderno premium para projetos, diagramas, estudos e Arquiteturas Azure com AI.', 54.90, N'/products/caderno_azure_com_ai_e_caneta_premium.png', 50),
+  (N'Camiseta Azure Expert', NULL, N'Camiseta exclusiva Azure Expert para profissionais que vivem Cloud e Azure.', 119.90, N'/products/camiseta_azure_expert_tech.png', 25),
+  (N'Camiseta Mentoria Arquiteto Azure', N'Camiseta Azure Architect', N'Camiseta exclusiva da Mentoria Arquiteto Azure.', 119.90, N'/products/mockup_de_camiseta_arquiteto_azure.png', 25),
+  (N'Camiseta Pós-Graduação Arquitetura de Azure com AI', N'Camiseta Microsoft Certified Expert', N'Camiseta exclusiva da Pós-Graduação Arquitetura de Azure com AI.', 119.90, N'/products/camiseta_tech_azure_com_design_futurista.png', 25);
 
 UPDATE products SET catalog_visible = 0;
 

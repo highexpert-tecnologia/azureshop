@@ -8,6 +8,16 @@ const { createApp } = require('../src/app');
 const { PRODUCT_CATALOG } = require('../src/catalog');
 const { createSqliteRepository } = require('../src/db/sqlite');
 
+const EXPECTED_CATALOG = [
+  ['Mochila Arquiteto Azure', 'Mochila premium para profissionais de Cloud, Azure e arquitetura.', 249.9, '/products/mochila_tech_azure_arquiteto.png'],
+  ['Caneca Mentoria Arquiteto Azure', 'Caneca exclusiva da Mentoria Arquiteto Azure.', 79.9, '/products/caneca_preta_mentoria_arquiteto_azure.png'],
+  ['Caneca Pós-Graduação Arquitetura de Azure com AI', 'Caneca exclusiva da Pós-Graduação Arquitetura de Azure com AI.', 79.9, '/products/caneca_azure_ai_pós_graduação_em_azul_neon.png'],
+  ['Caderno Pós-Graduação Arquitetura de Azure com AI', 'Caderno premium para projetos, diagramas, estudos e Arquiteturas Azure com AI.', 54.9, '/products/caderno_azure_com_ai_e_caneta_premium.png'],
+  ['Camiseta Azure Expert', 'Camiseta exclusiva Azure Expert para profissionais que vivem Cloud e Azure.', 119.9, '/products/camiseta_azure_expert_tech.png'],
+  ['Camiseta Mentoria Arquiteto Azure', 'Camiseta exclusiva da Mentoria Arquiteto Azure.', 119.9, '/products/mockup_de_camiseta_arquiteto_azure.png'],
+  ['Camiseta Pós-Graduação Arquitetura de Azure com AI', 'Camiseta exclusiva da Pós-Graduação Arquitetura de Azure com AI.', 119.9, '/products/camiseta_tech_azure_com_design_futurista.png']
+];
+
 function repository() {
   return { provider: 'test', async health(){ return true; }, async listProducts(){ return [{ id: 1, name: 'Caderno AI', price: 10, stock: 3 }]; }, async createOrder(){ return { id: 42, total: 10, status: 'Recebido' }; } };
 }
@@ -22,8 +32,14 @@ test('catálogo oficial contém exatamente sete produtos com imagens locais', as
   try {
     const products = await repository.listProducts();
     assert.equal(products.length, 7);
-    assert.deepEqual(products.map((product) => product.name), PRODUCT_CATALOG.map((product) => product.name));
-    assert.deepEqual(products.map((product) => product.image), PRODUCT_CATALOG.map((product) => product.image));
+    assert.deepEqual(
+      products.map((product) => [product.name, product.description, product.price, product.image]),
+      EXPECTED_CATALOG
+    );
+    assert.deepEqual(
+      PRODUCT_CATALOG.map((product) => [product.name, product.description, product.price, product.image]),
+      EXPECTED_CATALOG
+    );
   } finally {
     await repository.close();
     fs.rmSync(directory, { recursive: true, force: true });
