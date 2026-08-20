@@ -27,4 +27,6 @@ Use `.env.example` e `infra/terraform/terraform.tfvars.example` apenas como mode
 
 Não publique nem compartilhe `.env`, `terraform.tfvars`, estados Terraform, chaves, tokens, senhas, connection strings, bancos locais ou arquivos de segredo do Kubernetes. Revise custos, permissões e região com o instrutor antes de criar recursos Azure.
 
+No modelo oficial do workshop, o Dia 1 cria RG, VNet, App Service, SQL, Private Endpoint e DNS pelo Portal. O Terraform do Dia 2 consulta esses recursos como dados e cria somente ACR, AKS e a conectividade nova em duas fases. Consulte [Bloqueios conhecidos e como resolver](docs/WORKSHOP.md#bloqueios-conhecidos-e-como-resolver) antes de executar um plano.
+
 Consulte também a [arquitetura de referência](docs/ARCHITECTURE.md).

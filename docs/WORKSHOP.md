@@ -5,12 +5,11 @@
 1. [Antes de começar — requisitos mínimos](#1-antes-de-começar--requisitos-mínimos)
    1. [O que é obrigatório](#o-que-é-obrigatório)
    2. [Preparação no Portal e no Cloud Shell](#preparação-no-portal-e-no-cloud-shell)
-   3. [Recomendado](#recomendado)
-   4. [Dia 2: requisito adicional](#dia-2-requisito-adicional)
-   5. [Opcional e avançado: Copilot e Azure MCP](#opcional-e-avançado-copilot-e-azure-mcp)
-   6. [Requisitos por dia](#requisitos-por-dia)
-   7. [O que NÃO instalar antes](#o-que-não-instalar-antes)
-   8. [Checklist de 15 minutos antes da aula](#checklist-de-15-minutos-antes-da-aula)
+   3. [Ferramentas que não são obrigatórias](#ferramentas-que-não-são-obrigatórias)
+   4. [Requisitos por dia](#requisitos-por-dia)
+   5. [Checklist de 20 minutos antes da aula](#checklist-de-20-minutos-antes-da-aula)
+   6. [Matriz de cobertura dos laboratórios](#matriz-de-cobertura-dos-laboratórios)
+   7. [Bloqueios conhecidos e como resolver](#bloqueios-conhecidos-e-como-resolver)
 2. [Introdução da Imersão](#2-introdução-da-imersão)
    1. [Camadas lógicas da AzureShop](#camadas-lógicas-da-azureshop)
    2. [Workflow de alto nível](#workflow-de-alto-nível)
@@ -25,9 +24,9 @@
 4. [Fechamento do Dia 1](#4-fechamento-do-dia-1)
 5. [Dia 2 — Automação, ACR e AKS com Terraform](#5-dia-2--automação-acr-e-aks-com-terraform)
    1. [Laboratório 8 — Preparação do Terraform](#laboratório-8--preparação-do-terraform)
-   2. [Laboratório 9 — Nova VNet, ACR e AKS com Terraform](#laboratório-9--nova-vnet-acr-e-aks-com-terraform)
-   3. [Laboratório 10 — VNet Peering, DNS privado e NSG pelo Portal](#laboratório-10--vnet-peering-dns-privado-e-nsg-pelo-portal)
-   4. [Laboratório 11 — GitHub Copilot, Azure MCP e Azure AI Foundry](#laboratório-11--github-copilot-azure-mcp-e-azure-ai-foundry)
+   2. [Laboratório 9 — ACR e AKS com Terraform (fase 1)](#laboratório-9--acr-e-aks-com-terraform-fase-1)
+   3. [Laboratório 10 — VNet Peering, DNS privado e NSG com Terraform (fase 2)](#laboratório-10--vnet-peering-dns-privado-e-nsg-com-terraform-fase-2)
+   4. [Laboratório 11 — GitHub Copilot e Azure AI Foundry](#laboratório-11--github-copilot-e-azure-ai-foundry)
    5. [Laboratório 12 — Publicação da AzureShop no AKS](#laboratório-12--publicação-da-azureshop-no-aks)
    6. [Laboratório Extra — FinOps (opcional)](#laboratório-extra--finops-opcional)
 6. [Checklists de validação](#6-checklists-de-validação)
@@ -37,77 +36,124 @@
 
 ## 1. Antes de começar — requisitos mínimos
 
-Esta imersão começa pelo **Portal do Azure** e pelo **Azure Cloud Shell** para reduzir instalações na máquina. Você não precisa executar a AzureShop localmente para acompanhar os laboratórios. Faça somente as preparações abaixo e confirme qualquer dúvida de acesso, custo ou permissão com o instrutor.
+O caminho oficial desta imersão usa **Portal do Azure + Azure Cloud Shell (Bash)** para as ações Azure, CLI e Terraform. Assim, você não precisa instalar Azure CLI, Terraform, Docker ou `kubectl` localmente. Você precisa, porém, chegar com o projeto clonado, VS Code e GitHub Copilot prontos para que todos os laboratórios sejam executáveis de ponta a ponta.
 
 ### O que é obrigatório
 
-- **Computador:** Windows, macOS ou Linux atualizado.
-- **Navegador:** Microsoft Edge ou Google Chrome em versão atual.
-- **Internet:** conexão estável; recomenda-se 10 Mbps ou mais para uma experiência confortável, mas essa não é uma exigência formal do Azure.
-- **Conta Microsoft:** e-mail/conta para entrar no [Portal do Azure](https://portal.azure.com/).
-- **Assinatura Azure ativa:** confirme que consegue selecionar a assinatura correta. Se precisar criar ou usar uma assinatura compartilhada, alinhe antes com o responsável. Método de pagamento, limite de crédito e cobrança dependem do tipo de assinatura; revise os avisos de custo antes de criar recursos.
-- **Acesso Azure:** permissão para ler e criar os recursos do laboratório, ou acesso RBAC definido pelo instrutor.
-- **Conta GitHub:** necessária para os exercícios que envolvem GitHub Copilot e para acessar materiais entregues por repositório. Crie ou acesse a conta em [github.com/signup](https://github.com/signup).
-- **Projeto AzureShop:** acesso ao projeto oficial entregue no curso.
-- **Anotações e credenciais:** papel, caneta ou caderno e um método seguro para guardar credenciais. Não compartilhe senhas, chaves, tokens ou connection strings.
+1. **Assinatura Azure ativa:** use uma assinatura Trial ou, preferencialmente, Pay-As-You-Go. Consulte [criar e gerenciar assinaturas Azure](https://learn.microsoft.com/azure/cost-management-billing/manage/create-subscription) e entre pelo [Portal do Azure](https://portal.azure.com/). Trial pode ter créditos, limites, quotas e regiões indisponíveis: valide assinatura, cobrança, RBAC, região e quota **antes** da aula.
+2. **[Visual Studio Code](https://code.visualstudio.com/Download):** instale e abra o projeto localmente.
+3. **[Git](https://git-scm.com/downloads):** é necessário para clonar e acompanhar o fluxo do projeto. O Cloud Shell apoia as ações Azure/CLI, mas não substitui o repositório local no VS Code. O [Download ZIP](https://github.com/highexpert-tecnologia/azureshop/archive/refs/heads/main.zip) é somente contingência para leitura; não é o caminho principal de execução.
+4. **Conta [GitHub](https://github.com/signup) + [extensão oficial GitHub Copilot para VS Code](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot):** instale, autentique e valide o Copilot no VS Code antes da aula. O curso exige o Copilot nos exercícios guiados; elegibilidade e plano dependem da sua conta.
+5. **Navegador moderno:** Microsoft Edge ou Google Chrome atualizado para Portal, Cloud Shell e validações.
+6. **[PuTTY](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html):** requisito para SSH na VM em Windows. Em macOS/Linux, use o SSH nativo quando o instrutor solicitar a conexão.
+7. **AzureShop pronto antes da aula:** clone o repositório oficial:
 
-> **Projeto oficial da AzureShop:** [github.com/highexpert-tecnologia/azureshop](https://github.com/highexpert-tecnologia/azureshop). O conteúdo será disponibilizado pelo instrutor ou pelo repositório. Escolha uma opção simples:
->
-> - **Download ZIP — não exige Git:** [baixar o projeto](https://github.com/highexpert-tecnologia/azureshop/archive/refs/heads/main.zip).
-> - **[Clone — exige Git instalado](https://github.com/highexpert-tecnologia/azureshop.git):** `https://github.com/highexpert-tecnologia/azureshop.git`
+   ```bash
+   git clone https://github.com/highexpert-tecnologia/azureshop.git
+   cd azureshop
+   ```
+
+   Fonte oficial: [github.com/highexpert-tecnologia/azureshop](https://github.com/highexpert-tecnologia/azureshop).
 
 ### Preparação no Portal e no Cloud Shell
 
-1. Abra o [Portal do Azure](https://portal.azure.com/) e entre com a conta correta.
-2. Em **Subscriptions**, confirme o diretório, a assinatura e o contexto definidos para a turma.
-3. Abra o [Azure Cloud Shell](https://learn.microsoft.com/azure/cloud-shell/overview) e escolha **Bash** como opção preferencial.
-4. Na primeira abertura, o Cloud Shell pode pedir para criar ou selecionar armazenamento persistente. Ele usa recursos de armazenamento para manter arquivos entre sessões e pode gerar custo baixo; leia a tela e confirme apenas se estiver de acordo com a assinatura escolhida.
-5. Confirme com o instrutor a região a ser usada em cada laboratório. Região, quota e disponibilidade devem ser verificadas no momento do exercício.
+1. Entre no [Portal do Azure](https://portal.azure.com/) com a conta autorizada.
+2. Em **Subscriptions**, confirme diretório, assinatura, método de cobrança e RBAC definido para a turma.
+3. Confirme com o instrutor a região e as quotas necessárias. AKS, SKU do App Service, SQL e serviços de IA podem não estar disponíveis em todas as regiões ou assinaturas.
+4. Abra o [Azure Cloud Shell](https://learn.microsoft.com/azure/cloud-shell/overview) e selecione **Bash**. Ele é o ambiente oficial do curso para `az`, Terraform e `kubectl`.
+5. Na primeira abertura, o Cloud Shell pode solicitar armazenamento persistente. Esse armazenamento pode gerar custo baixo; leia a tela, confirme a assinatura e aceite somente se estiver de acordo.
+6. Não cole senhas, chaves, tokens, connection strings ou dados de clientes no terminal compartilhado, chat, código ou prompts.
 
-### Recomendado
+### Ferramentas que não são obrigatórias
 
-- **[Visual Studio Code atualizado](https://code.visualstudio.com/Download):** recomendado para ler e editar o projeto e os arquivos Terraform; não é obrigatório para os laboratórios do Dia 1.
-- **[GitHub Copilot no VS Code](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot):** instale a extensão oficial se desejar usá-la. O GitHub Copilot Free depende de elegibilidade e disponibilidade e é apenas um apoio ao aprendizado; o Laboratório 3 também pode ser acompanhado com a orientação do instrutor.
-- **Extensões auxiliares do VS Code:** Azure Account/Azure Tools e Terraform (HashiCorp) podem facilitar navegação e edição, mas não são requisitos para concluir o Dia 1.
-- **[Git](https://git-scm.com/downloads):** instale somente se optar por clonar e versionar o repositório. Baixar o ZIP do projeto continua sendo uma alternativa válida.
-- **Docker:** não é necessário no Dia 1. No Dia 2, use-o somente se o laboratório realmente executar um build local. Quando aplicável, siga a alternativa de build no ACR, Cloud Shell ou ambiente do instrutor indicada no material.
-
-### Dia 2: requisito adicional
-
-Para os laboratórios de Terraform, use a [CLI do Terraform](https://developer.hashicorp.com/terraform/install) instalada na máquina **somente se não for usar** a alternativa disponível ou configurável no Cloud Shell, conforme orientação do instrutor. A Azure CLI já é fornecida pelo Cloud Shell; não é necessário instalá-la localmente para acompanhar a trilha baseada no navegador.
-
-O acesso mínimo necessário varia conforme a ação. Use `[definir]` ou confirme com o instrutor as permissões RBAC aplicáveis em vez de presumir uma função. AKS e serviços de IA podem depender de quota, região e capacidade. Quando não houver disponibilidade, use o ambiente de demonstração ou a contingência definida pelo instrutor.
-
-### Opcional e avançado: Copilot e Azure MCP
-
-GitHub Copilot é apoio de aprendizado, não pré-requisito. A extensão do VS Code pode ser usada quando estiver disponível, mas as atividades possuem alternativas pelo Portal, Cloud Shell, CLI ou Terraform.
-
-O Azure MCP é uma integração com ferramentas conectadas quando disponível; não é uma extensão oficial única exigida pelo curso. Seu uso no Dia 2 é opcional e depende de disponibilidade, conta e RBAC adequados. Nunca cole segredos, chaves, tokens ou connection strings em prompts, chats, arquivos de configuração ou comandos compartilhados.
+- **Terraform, Azure CLI e `kubectl` locais:** não instale para esta imersão; use as ferramentas fornecidas/configuradas no Cloud Shell.
+- **Docker local:** não é necessário. O Lab 12 usa build remoto no ACR; Docker local é apenas uma validação opcional quando o instrutor liberar.
+- **Extensões Azure/Terraform no VS Code:** podem facilitar a leitura, mas não substituem o Portal, Cloud Shell ou a revisão humana.
 
 ### Requisitos por dia
 
-| Dia | Necessário para acompanhar | Recursos recomendados ou condicionais |
+| Dia | Caminho oficial | Validações antes de iniciar |
 |---|---|---|
-| Dia 1 | Navegador, [Portal do Azure](https://portal.azure.com/), [Cloud Shell](https://learn.microsoft.com/azure/cloud-shell/overview), assinatura ativa, acesso RBAC definido, [conta GitHub](https://github.com/signup) e projeto AzureShop disponível para leitura. | [VS Code](https://code.visualstudio.com/Download), [Git](https://git-scm.com/downloads) e [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot) para análise do projeto. |
-| Dia 2 | Itens do Dia 1 e [Terraform](https://developer.hashicorp.com/terraform/install) na máquina **ou** alternativa aprovada no Cloud Shell, conforme orientação do instrutor. | VS Code/Git, build local com Docker somente quando solicitado, e acesso a AKS, ACR e IA conforme quota, região e capacidade. |
+| Dia 1 | Portal + VS Code/Git/Copilot + PuTTY quando houver SSH em Windows. | Assinatura/RBAC/região confirmados; repositório aberto no VS Code; Copilot autenticado. |
+| Dia 2 | Portal + Cloud Shell (Bash) para Azure CLI, Terraform e `kubectl`; VS Code/Git/Copilot para revisar código e Terraform. | Cloud Shell aberto com storage aceito; `az account show` aponta para a assinatura correta; quota/região para AKS, ACR e IA confirmadas. |
 
-### O que NÃO instalar antes
+### Checklist de 20 minutos antes da aula
 
-Não instale Kubernetes, `kubectl`, Docker ou Azure CLI local apenas para se preparar. Se você usar o Cloud Shell, essas ferramentas locais não são necessárias para os primeiros passos. O instrutor avisará caso algum laboratório exija uma instalação específica ou uma ferramenta adicional.
+- [ ] Fiz login na [conta GitHub](https://github.com/signup), instalei a [extensão GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot), autentiquei no VS Code e validei que ela está ativa.
+- [ ] Instalei [VS Code](https://code.visualstudio.com/Download), [Git](https://git-scm.com/downloads) e, no Windows, [PuTTY](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html).
+- [ ] Clonei `https://github.com/highexpert-tecnologia/azureshop.git`, abri a pasta no VS Code e localizei `docs/`, `infra/terraform/`, `public/` e `src/`.
+- [ ] Fiz login no [Portal do Azure](https://portal.azure.com/) e confirmei assinatura, RBAC, cobrança, região e quota com o instrutor.
+- [ ] Abri o [Cloud Shell](https://learn.microsoft.com/azure/cloud-shell/overview), escolhi **Bash** e confirmei conscientemente o armazenamento persistente, se solicitado.
+- [ ] Sei que Trial pode bloquear SKUs, regiões, quotas ou créditos; tenho a contingência/ambiente demonstrativo indicado pelo instrutor.
+- [ ] Não vou inserir segredos, chaves, tokens, connection strings ou dados de clientes em chat, prompts, commits ou arquivos.
 
-### Checklist de 15 minutos antes da aula
+### Matriz de cobertura dos laboratórios
 
-- [ ] Entrei no [Azure](https://portal.azure.com/) e no [GitHub](https://github.com/signup).
-- [ ] Abri o [Portal do Azure](https://portal.azure.com/) e confirmei a assinatura correta.
-- [ ] Abri o [Cloud Shell](https://learn.microsoft.com/azure/cloud-shell/overview) em Bash e confirmei a decisão sobre armazenamento persistente.
-- [ ] Baixei o [ZIP da AzureShop](https://github.com/highexpert-tecnologia/azureshop/archive/refs/heads/main.zip) ou preparei o clone com [Git](https://git-scm.com/downloads).
-- [ ] Instalei o [VS Code](https://code.visualstudio.com/Download) e o [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot) apenas se desejar usá-los.
-- [ ] Para o Dia 2 sem Cloud Shell, instalei o [Terraform](https://developer.hashicorp.com/terraform/install) conforme orientação do instrutor.
-- [ ] Confirmei e-mail e autenticação em dois fatores (2FA), quando exigida pela conta.
-- [ ] Revisei com o responsável o orçamento, os limites e a política de custo da assinatura.
-- [ ] Sei com quem falar caso não tenha permissão, quota ou região disponível.
+| Lab | Pré-requisitos e ferramenta principal | Validação de saída | Contingência e custo/limite |
+|---|---|---|---|
+| 1 | Assinatura/RBAC, Portal | RG, tags e Activity Log | Pare se assinatura/região não estiver correta; revise custos antes de criar. |
+| 2 | Lab 1, Portal | VNet, subnets e NSG sem regra ampla | Use prefixos confirmados; não abra portas para `Any`. |
+| 3 | Labs 1–2, VS Code, Git e Copilot autenticado | Runtime, porta, health e riscos revisados | Se Copilot não autenticar, resolva o login antes do lab; não envie segredos. |
+| 4 | Labs 1–3, Portal | App Service, catálogo e `/api/health` | Verifique SKU/runtime e custo do plano antes de criar. |
+| 5 | Lab 4, Portal | SQL, schema e pedido persistido | Confirme SKU/custo; não exponha senha. |
+| 6 | Labs 2 e 5, Portal | PE aprovado e DNS privado vinculado | Não desabilite acesso público antes de DNS/TCP validarem; PE tem custo. |
+| 7 | Lab 6, Portal | VNet Integration, DNS privado e TCP 1433 | SKU do App Service deve suportar integração; subnet exclusiva. |
+| 8 | Dia 2, Cloud Shell Bash e repositório clonado | `init`, `fmt`, `validate` e `plan` revisados | Não aplique plano não revisado; confirme permissões/quota. |
+| 9 | Lab 8, Cloud Shell e quota AKS/ACR | AKS/nós/ACR e namespace confirmados | Use ambiente demonstrativo se quota/região bloquear; revise custos de AKS. |
+| 10 | Labs 6, 7 e 9, Portal + Cloud Shell | Peerings, DNS em duas VNets e TCP 1433 no pod | Não altere NSG/DNS fora do escopo; valide antes de fechar acesso público. |
+| 11 | GitHub Copilot autenticado, Portal/Cloud Shell e capacidade Foundry | Provider, deployment e chamada segura | Se região/modelo/quota não existirem, use a demonstração do instrutor; não crie recurso paralelo. |
+| 12 | Labs 9–10, Cloud Shell | Imagem ACR, rollout e app saudável | Use ACR Build; não crie Deployment paralelo e revise custos do cluster. |
 
-> **Segurança e custos:** trabalhe somente na assinatura autorizada, não compartilhe credenciais e não crie recursos fora do escopo do laboratório. Em caso de dúvida, pare e confirme com o instrutor antes de aceitar cobranças, criar armazenamento ou alterar recursos.
+> **Segurança e custos:** trabalhe apenas na assinatura autorizada. Em dúvida sobre RBAC, quota, cobrança, storage do Cloud Shell ou alteração de recurso, pare e confirme com o instrutor.
+
+### Bloqueios conhecidos e como resolver
+
+> **Modelo aprovado para esta turma: Modelo A — evolução no mesmo ambiente.** O Dia 1 cria os recursos base pelo Portal no RG manual. O Terraform do Dia 2 lê esses recursos com `data` sources e cria somente ACR, AKS e a conectividade nova do AKS. Ele não recria Resource Group, VNet, NSG, App Service, SQL, Private Endpoint ou DNS privado do Dia 1.
+
+#### Escolha um modelo de execução
+
+| Modelo | Onde executar | Fluxo de rede e peering | Documentação/ajuste necessário | Quando usar |
+|---|---|---|---|---|
+| **A. Evolução no mesmo ambiente — selecionado** | Dia 1: Portal no RG manual. Dia 2: Cloud Shell + Terraform para ACR, AKS e integrações novas. | AKS cria a VNet gerenciada; a fase 2 cria peering bidirecional, vínculo DNS e regra TCP 1433 para o SQL existente na VNet manual. | O Terraform lê RG, VNet, NSG, App Service, SQL, Private Endpoint e DNS como `data` sources. Preencha seus nomes não secretos após o Dia 1. | Caminho oficial: demonstra a evolução real sem importar recursos manuais ao state. |
+| **B. Ambientes separados** | Dia 1: Portal em um RG manual. Dia 2: Cloud Shell + Terraform em outro RG novo e completo. | Cada ambiente cria sua própria VNet, SQL e caminho privado. O fluxo básico não cria peering entre Dia 1 e Dia 2. | Informar dois RGs e manter nomes/sufixos distintos. Não misturar outputs, DNS, SQL ou ACR entre eles. | Alternativa para turmas que não possam usar o mesmo RG. |
+| **C. Import avançado** | Portal para os labs manuais; Cloud Shell para `terraform import`, `plan` e apply controlado. | Preserva a topologia única do modelo A após os recursos manuais entrarem no state. | Criar uma lista de imports por recurso, executar import em state remoto/controlado e revisar `terraform plan` sem mudanças inesperadas. | Somente para alunos avançados ou instrutor; não é o fluxo padrão. |
+
+#### Valores que precisam ser definidos com segurança
+
+Estes valores são necessários para a criação real e não devem ser inventados, publicados no repositório ou enviados em chat:
+
+| Valor | Labs | Onde informar | Como validar | Alternativa segura |
+|---|---|---|---|---|
+| Região e desenho regional | 1, 4–12 | **East US** no Portal e em `terraform.tfvars` local. | SKUs, quota e modelo de IA aparecem como disponíveis na região. | Use o ambiente de demonstração se a região, SKU ou quota não estiver disponível. |
+| IP/CIDR público autorizado | 2 e 5 | Regra NSG/firewall pelo Portal, usando o CIDR autorizado para a turma. | A origem autorizada alcança apenas as portas previstas; não há regra com `Any`/`*`. | Mantenha regras fechadas e faça a demonstração pelo ambiente autorizado. |
+| Senha da VM e senha administrativa do SQL | 2, 5, 7, 10 e 12 | Digite no Portal ou em sessão segura do Cloud Shell quando o fluxo solicitar. | Conexão SSH/SQL funciona sem a senha aparecer em saída, arquivo, YAML, state, Git ou chat. | Não crie o recurso até existir um canal seguro; não reutilize a senha fora deste laboratório. |
+| Nome e prefixo da subnet exclusiva de VNet Integration | 7 | Portal no Dia 1: `snet-appservice-integration` e `10.10.3.0/24`. | Prefixo não sobrepõe `snet-aplicacao` `10.10.1.0/24` nem `snet-dados` `10.10.2.0/24`; subnet está delegada a `Microsoft.Web/serverFarms`. | Não habilite VNet Integration até que a subnet dedicada seja definida. |
+| Modelo, versão, capacidade e quota de IA | 11 | Portal/Foundry e configuração local aprovada. | Deployment termina em `Succeeded`; métricas/quota permitem a chamada de teste. | Use recurso/deployment de demonstração; não crie recurso paralelo para contornar quota. |
+
+#### Go/no-go por laboratório
+
+| Lab | Go quando | Pare quando | Correção e contingência |
+|---|---|---|---|
+| 1 | Assinatura, RBAC, East US, tags e Modelo A estão aprovados. | RG, região ou proprietário de custo não estão confirmados. | Confirme o contexto pelo Portal; não crie RG até decidir o modelo. |
+| 2 | CIDR autorizado e método SSH seguro estão definidos. | A única opção seria abrir SSH/app para `Any` ou `*`. | Restrinja o CIDR ou use a demonstração; não abra a regra. |
+| 3 | Repositório, VS Code, Git e Copilot estão autenticados. | O Copilot não está disponível ou há segredo no contexto. | Corrija login; remova dados sensíveis antes de analisar. |
+| 4 | Plano/SKU e método de publicação foram aprovados. | Runtime, custo ou nome global do App Service não foram validados. | Verifique no Portal; use nome/sufixo novo e pare antes de criar se houver conflito. |
+| 5 | Senha SQL segura e SKU/região estão aprovados. | A senha precisaria ir para arquivo versionado, chat ou log. | Use variável efêmera/Key Vault aprovado ou interrompa o lab. |
+| 6 | `snet-dados` está exclusiva e SQL existe. | DNS/Private Endpoint apontaria para VNet/subnet errada. | Corrija a seleção antes de criar; confirme estado `Approved` e zone group. |
+| 7 | Subnet exclusiva, delegação e SKU compatível estão confirmadas. | A subnet sobrepõe outra rede ou tenta reutilizar `snet-dados`. | Defina outro prefixo; não habilite integração até validar DNS/TCP. |
+| 8 | O Modelo A está selecionado e os identificadores não secretos do Dia 1 estão em `terraform.tfvars` local. | O Terraform tenta criar recurso já criado pelo Portal. | Não aplique; confirme o modelo A e os `data` sources. |
+| 9 | `terraform plan` está limpo e quota/SKU AKS+ACR estão disponíveis. | Plano indica recriação inesperada ou quota/RBAC falha. | Não aplique; use demonstração ou corrija o plano/RBAC. |
+| 10 | AKS já terminou, VNet/MC RG/prefixos reais foram coletados e os dois peerings estão aprovados. | Ainda não há VNet AKS ou DNS/TCP não foi validado. | Faça o segundo estágio somente após coleta; mantenha acesso atual do SQL até o teste concluir. |
+| 11 | Provider, RBAC, modelo, região, quota e capacidade estão confirmados. | Deployment não está disponível ou retorna limite/quota. | Use deployment de demonstração; não contorne com recurso fora do escopo. |
+| 12 | ACR, AKS, namespace, ConfigMap, Secret seguro, tag imutável e URL estão confirmados. | Manifest ainda possui `ACR_NAME`/`IMAGE_TAG` ou Secret não foi preparado de modo seguro. | Substitua somente valores não secretos; injete segredo por mecanismo aprovado e valide rollout. |
+
+#### Provisionamento, espera e validação
+
+- **Portal:** após cada criação, aguarde o estado exibido pelo recurso como concluído/aprovado antes de iniciar o laboratório dependente. Não assuma uma duração fixa: o Portal e o provider informam o estado real.
+- **Cloud Shell:** execute um comando por etapa e confirme o retorno antes do próximo. Para Terraform, `plan` é checkpoint obrigatório; para AKS e Deployments, acompanhe o estado/rollout até a conclusão ou erro.
+- **Terraform:** mantenha `terraform.tfvars`, state e arquivos de plano fora do Git. Se o plano listar recursos manuais como novos, não execute apply: isso é sintoma de colisão de estado, não uma etapa de espera.
+- **Quota, RBAC, provider e região:** valide no Portal antes da criação. Se uma permissão, provider, SKU, modelo ou quota não estiver disponível, registre o bloqueio, mantenha o ambiente inalterado e use a contingência aprovada pelo instrutor.
+- **Custo:** antes de cada recurso cobrado, confira SKU e estimativa no Portal. Nós AKS, App Service, SQL, Private Endpoint, ACR, IA, logs e armazenamento do Cloud Shell podem gerar custo; não há tempo de espera ou valor de cobrança presumido neste guia.
 
 ## 2. Introdução da Imersão
 
@@ -221,8 +267,8 @@ No Dia 1, todos os recursos Azure são criados e explorados pelo **Portal do Azu
 2. Confirme o diretório e selecione a subscrição correta.
 3. Abra **Subscriptions** e confira o status e o limite de custo disponível.
 4. Abra **Resource groups** e selecione **Create**.
-5. Informe o nome do Resource Group do laboratório: `[definir]`.
-6. Selecione uma região disponível: `[definir]`.
+5. Informe o nome do Resource Group do laboratório: `rg-imersao-arquitetoazure`.
+6. Selecione a região: **East US**.
 7. Na guia de tags, adicione:
    - `ambiente = [definir]`
    - `curso = Imersao-Arquiteto-Azure`
@@ -230,6 +276,8 @@ No Dia 1, todos os recursos Azure são criados e explorados pelo **Portal do Azu
    - `custo = [definir]`
 8. Revise e crie o Resource Group.
 9. No Resource Group criado, abra **Cost Management**, **Activity log** e **Resource visualizer**.
+
+> **Modelo A:** este RG é criado e mantido pelo Portal no Dia 1. No Dia 2, o Terraform apenas o consulta por `data` source; não execute Terraform que declare novamente esse Resource Group.
 
 **Validação:**
 
@@ -276,11 +324,15 @@ No Dia 1, todos os recursos Azure são criados e explorados pelo **Portal do Azu
 5. Crie também a subnet de dados:
    - nome: `snet-dados`;
    - prefixo: `10.10.2.0/24`.
-6. Crie um Network Security Group para a aplicação.
-7. Em **Inbound security rules**, crie uma regra restrita para o tráfego necessário no laboratório. Use IP/CIDR confirmado em vez de `Any` ou `*`.
-8. Explique as regras padrão outbound e por que uma regra inbound aberta é insegura.
-9. Observe a prioridade: números menores são avaliados antes.
-10. Associe o NSG apenas à subnet que precisa da proteção definida.
+6. Reserve para o Laboratório 7 a subnet exclusiva de VNet Integration:
+   - nome: `snet-appservice-integration`;
+   - prefixo: `10.10.3.0/24`;
+   - delegação: `Microsoft.Web/serverFarms`.
+7. Crie um Network Security Group para a aplicação, com o nome `nsg-snet-aplicacao`, e associe-o às subnets planejadas conforme a validação do Lab 7.
+8. Em **Inbound security rules**, crie uma regra restrita para o tráfego necessário no laboratório. Use somente o CIDR autorizado para a turma, nunca `Any` ou `*`.
+9. Explique as regras padrão outbound e por que uma regra inbound aberta é insegura.
+10. Observe a prioridade: números menores são avaliados antes.
+11. Não associe Private Endpoint ou VNet Integration à `snet-aplicacao`.
 
 ```mermaid
 flowchart TB
@@ -297,6 +349,7 @@ flowchart TB
 - [ ] A VNet `vnet-imersao` usa `10.10.0.0/16`.
 - [ ] `snet-aplicacao` usa `10.10.1.0/24`.
 - [ ] `snet-dados` usa `10.10.2.0/24`.
+- [ ] `snet-appservice-integration` usa `10.10.3.0/24`, não tem cargas e está delegada ao App Service.
 - [ ] O NSG está associado à subnet planejada.
 - [ ] Nenhuma regra criada usa origem ampla sem justificativa.
 
@@ -326,8 +379,8 @@ flowchart TB
 **Pré-requisitos:**
 
 - Laboratórios 1 e 2 concluídos.
-- Código da AzureShop disponível localmente.
-- GitHub Copilot disponível no editor, quando autorizado pela organização.
+- Repositório AzureShop clonado e aberto no VS Code.
+- GitHub Copilot instalado, autenticado e ativo no VS Code.
 
 **Atividade guiada com GitHub Copilot:**
 
@@ -350,7 +403,7 @@ flowchart TB
 
 3. Compare a resposta com `package.json`, `src/`, `public/` e `/api/health`.
 4. Registre as configurações necessárias para o App Service com valores confirmados ou `[definir]`.
-5. Use o Copilot apenas como apoio de análise. A validação do código, as decisões de arquitetura e a criação de recursos continuam sob revisão humana.
+5. Use o Copilot como parte obrigatória da atividade guiada, sem delegar a ele decisões. A validação do código, as decisões de arquitetura e a criação de recursos continuam sob revisão humana.
 
 ```mermaid
 flowchart LR
@@ -570,14 +623,14 @@ flowchart LR
 
 - Laboratório 6 concluído.
 - Plano do App Service compatível com VNet Integration.
-- Prefixo disponível sem sobreposição: `[definir]`.
+- `snet-appservice-integration` `10.10.3.0/24` criada no Laboratório 2, vazia e sem sobreposição.
 
 **Passos pelo Portal:**
 
-1. Abra `vnet-imersao` e crie uma subnet exclusiva para VNet Integration:
-   - nome: `[definir]`;
-   - prefixo: `[definir]`.
-2. Na criação da subnet, delegue-a a:
+1. Abra `vnet-imersao` e confirme a subnet exclusiva para VNet Integration:
+   - nome: `snet-appservice-integration`;
+   - prefixo: `10.10.3.0/24`.
+2. Confirme que a subnet está delegada a:
 
    ```text
    Microsoft.Web/serverFarms
@@ -587,13 +640,13 @@ flowchart LR
 4. Abra o App Service e selecione **Networking**.
 5. Em **VNet integration**, selecione **Add VNet**.
 6. Escolha `vnet-imersao` e a subnet delegada.
-7. No NSG da subnet de dados, crie uma regra TCP 1433 com:
+7. No NSG `nsg-snet-aplicacao` associado à subnet de dados, crie uma regra TCP 1433 com:
    - origem: subnet da VNet Integration;
    - destino: `snet-dados`;
    - protocolo: TCP;
    - porta de destino: 1433;
    - ação: Allow;
-   - prioridade: `[definir]`.
+   - prioridade: `1003`, desde que não esteja em uso.
 8. Use o hostname normal do SQL na variável `AZURE_SQL_SERVER`.
 9. Valide DNS privado, a conexão TCP 1433 e `/api/health`.
 
@@ -639,7 +692,7 @@ Hoje você criou e entendeu a arquitetura pelo Portal. Amanhã a AzureShop evolu
 ### Revisão dos recursos
 
 - Resource Group, tags, custo e auditoria.
-- `vnet-imersao`, `snet-aplicacao` e `snet-dados`.
+- `vnet-imersao`, `snet-aplicacao`, `snet-dados` e `snet-appservice-integration`.
 - NSG com regras restritas.
 - App Service e health check.
 - Análise de modernização de VM para App Service com GitHub Copilot e revisão humana.
@@ -694,12 +747,12 @@ Arquivos principais:
 
 | Arquivo | Responsabilidade |
 |---|---|
-| `main.tf` | Conecta módulos e estágios da infraestrutura |
+| `main.tf` | Lê os recursos manuais do Dia 1 e cria somente ACR, AKS e conectividade nova do Dia 2 |
 | `variables.tf` | Declara variáveis de entrada |
 | `outputs.tf` | Expõe informações úteis após o provisionamento |
 | `terraform.tfvars` | Valores do ambiente local, sem segredos |
 | `providers.tf` | Provider Azure e configuração de estado |
-| `modules/` | Componentes reutilizáveis de rede, SQL, ACR, AKS e outros serviços |
+| `modules/` | Componentes reutilizáveis; no Modelo A, os módulos ativos são ACR e AKS |
 
 ### Laboratório 8 — Preparação do Terraform
 
@@ -707,17 +760,20 @@ Arquivos principais:
 
 **Pré-requisitos:**
 
-- Azure CLI autenticada.
-- Terraform instalado.
-- Permissão para criar os recursos planejados.
-- Pasta `infra/terraform/` disponível.
+- Azure Cloud Shell em **Bash** aberto e com armazenamento persistente aceito conscientemente, quando solicitado.
+- `az account show` apontando para a subscrição aprovada.
+- Laboratórios 1 a 7 concluídos pelo Portal no RG `rg-imersao-arquitetoazure`.
+- Modelo A confirmado: o Terraform cria somente ACR, AKS e conectividade nova; os recursos do Dia 1 serão lidos por `data` sources.
+- Permissão para criar os recursos planejados e ler os recursos manuais do Dia 1.
+- Repositório AzureShop clonado, com a pasta `infra/terraform/` disponível no Cloud Shell.
 
 **Passos:**
 
-1. Autentique-se:
+1. No Cloud Shell, obtenha o repositório e confirme o contexto:
 
    ```bash
-   az login
+   git clone https://github.com/highexpert-tecnologia/azureshop.git
+   cd azureshop
    az account show
    ```
 
@@ -733,27 +789,15 @@ Arquivos principais:
    cd infra/terraform
    ```
 
-4. Copie o modelo de variáveis:
-
-   ```bash
-   copy terraform.tfvars.example terraform.tfvars
-   ```
-
-   No macOS/Linux:
+4. Copie o modelo de variáveis no Bash:
 
    ```bash
    cp terraform.tfvars.example terraform.tfvars
    ```
 
-5. Preencha apenas valores confirmados.
-6. Não grave senha SQL no arquivo. Use variável de ambiente:
+5. Preencha somente identificadores **não secretos** obtidos no Portal: App Service, servidor SQL, Private Endpoint, VNet, NSG, zona DNS e um sufixo novo para ACR/AKS. Não informe senha de VM ou SQL neste arquivo, em comando, em output ou em chat.
 
-   ```bash
-   # PowerShell
-   $env:TF_VAR_sql_admin_password = "[definir]"
-   ```
-
-7. Execute:
+6. Com `deploy_acr = false`, `deploy_aks = false` e `enable_aks_private_connectivity = false`, valide o handoff Portal -> Terraform:
 
    ```bash
    terraform init
@@ -762,11 +806,7 @@ Arquivos principais:
    terraform plan -out=tfplan
    ```
 
-8. Leia o plano completo. Só após revisão e aprovação execute:
-
-   ```bash
-   terraform apply tfplan
-   ```
+7. Confirme que o plano lê os recursos do Portal e **não** tenta criar RG, VNet, NSG, App Service, SQL, Private Endpoint ou Private DNS Zone. Se listar algum deles como novo, pare: o `terraform.tfvars` está apontando para o ambiente errado ou o modelo A não foi aplicado.
 
 **O que cada comando faz:**
 
@@ -775,43 +815,64 @@ Arquivos principais:
 | `terraform init` | Inicializa providers e módulos |
 | `terraform fmt -check` | Verifica formatação |
 | `terraform validate` | Verifica sintaxe e referências estáticas |
-| `terraform plan` | Mostra alterações propostas |
-| `terraform apply` | Aplica o plano aprovado |
+| `terraform plan` | Mostra alterações propostas; no checkpoint inicial não deve propor recursos do Dia 1 |
+| `terraform apply` | Aplica somente uma fase aprovada; não execute durante a validação documental |
 
 **Boas práticas:**
 
 - Não pule o `plan`.
 - Não publique `terraform.tfvars` com segredos.
-- Use Key Vault ou variáveis de ambiente para dados sensíveis.
+- Senhas de VM e SQL são inseridas somente pelo Portal ou por canal seguro quando o laboratório correspondente solicitar; não são variáveis do Terraform do Dia 2.
 - Configure backend remoto antes de trabalho colaborativo.
+- Não instale Terraform ou Azure CLI localmente para este workshop; o Cloud Shell é o caminho suportado.
 
-### Laboratório 9 — Nova VNet, ACR e AKS com Terraform
+**Validação:**
 
-**Objetivo:** provisionar a camada de contêineres com Terraform, ACR e AKS.
+- [ ] O Cloud Shell está na assinatura aprovada.
+- [ ] `terraform init`, `terraform fmt -check` e `terraform validate` foram concluídos sem erro.
+- [ ] O `terraform plan` foi lido e aprovado por uma pessoa antes de qualquer `apply`.
+- [ ] `terraform.tfvars` contém somente valores confirmados e não contém segredos.
+- [ ] O plano inicial não propõe recriar nenhum recurso criado pelo Portal no Dia 1.
+
+**Contingência e custo:** se o Cloud Shell, RBAC, provider ou quota bloquearem o plano, pare e use a demonstração do instrutor; não tente contornar a restrição com outra assinatura ou recurso. Um `apply` pode criar recursos cobrados, portanto aplique somente o plano aprovado.
+
+### Laboratório 9 — ACR e AKS com Terraform (fase 1)
+
+**Objetivo:** provisionar somente a camada nova de contêineres: ACR e AKS. A VNet do AKS é gerenciada pelo cluster; VNet, App Service, SQL, Private Endpoint e DNS do Dia 1 permanecem recursos do Portal.
 
 **Você desenvolverá:** leitura de módulos Terraform, identidade, permissões, outputs, namespace, deployment, service e probes.
 
+**Pré-requisitos:**
+
+- Laboratório 8 concluído no Cloud Shell.
+- Plano Terraform revisado e aprovado.
+- Quota, região e capacidade para AKS/ACR confirmadas ou ambiente de demonstração definido.
+- Permissões no escopo aprovado para os recursos planejados e para obter credenciais do AKS.
+- `terraform.tfvars` contém os identificadores não secretos dos recursos criados pelo Portal.
+
 **Passos:**
 
-1. Revise `main.tf` e observe os módulos de rede, ACR e AKS.
-2. Confirme as flags de estágio em `terraform.tfvars`.
-3. Aplique somente o plano revisado.
-4. Revise os outputs para Resource Group, ACR e AKS.
-5. Obtenha as credenciais do cluster:
+1. Revise `main.tf` e confirme os `data` sources do Portal e os módulos novos `container_registry` e `aks`.
+2. No `terraform.tfvars`, defina `deploy_acr = true`, `deploy_aks = true` e mantenha `enable_aks_private_connectivity = false`.
+3. Execute `terraform plan -out=tfplan-fase1` e confirme que a lista de criação contém somente ACR, AKS e a atribuição `AcrPull`.
+4. Aplique somente a fase 1 aprovada. Aguarde o estado real do AKS ser concluído; não presuma duração.
+5. Revise os outputs para ACR, AKS e `aks_node_resource_group`.
+6. Obtenha as credenciais do cluster:
 
    ```bash
    az aks get-credentials --resource-group "[definir]" --name "[definir]" --overwrite-existing
    kubectl get nodes
    ```
 
-6. Crie ou confirme o namespace:
+7. Crie ou confirme o namespace:
 
    ```bash
    kubectl apply -f ../../infra/k8s/namespace.yaml
    kubectl get namespace azure-shop
    ```
 
-7. Revise `infra/k8s/deployment.yaml` e `infra/k8s/service.yaml`.
+8. Colete pelo Cloud Shell o nome e os prefixos da VNet gerenciada do AKS e preencha `aks_node_resource_group` e `aks_vnet_name` no arquivo local. Mantenha `enable_aks_private_connectivity = false` até iniciar o Laboratório 10.
+9. Revise `infra/k8s/deployment.yaml` e `infra/k8s/service.yaml`.
 
 **Conceitos importantes:**
 
@@ -819,6 +880,7 @@ Arquivos principais:
 - A VNet gerenciada pelo AKS é criada junto com o cluster e é distinta da VNet da aplicação criada no Dia 1.
 - O ACR armazena imagens e o AKS deve usar identidade com a função `AcrPull`.
 - O Deployment controla réplicas e rollout; o Service expõe a aplicação; as probes usam `/api/health`.
+- O Terraform não cria nem assume ownership dos recursos manuais do Dia 1.
 
 **Validação:**
 
@@ -827,40 +889,34 @@ Arquivos principais:
 - [ ] O ACR está disponível.
 - [ ] O AKS possui nós prontos.
 - [ ] O namespace `azure-shop` existe.
+- [ ] O RG gerenciado, a VNet e os prefixos reais do AKS foram coletados para a fase 2.
 
-### Laboratório 10 — VNet Peering, DNS privado e NSG pelo Portal
+**Contingência e custo:** AKS e ACR podem ser bloqueados por quota, região, SKU ou RBAC. Não crie cluster ou registry alternativo sem aprovação. Confirme a estimativa e encerre recursos temporários conforme orientação do instrutor.
 
-**Objetivo:** conectar, pelo Portal do Azure, a VNet do AKS à VNet da aplicação e permitir acesso privado dos pods ao Azure SQL.
+### Laboratório 10 — VNet Peering, DNS privado e NSG com Terraform (fase 2)
+
+**Objetivo:** conectar a VNet gerenciada do AKS à VNet manual do Dia 1 e permitir acesso privado dos pods ao Azure SQL. O Terraform cria somente os dois peerings, o vínculo DNS do AKS e a regra TCP 1433 nova no NSG já existente.
 
 **Você desenvolverá:** peering bidirecional, vínculo da Private DNS Zone com a VNet do AKS, regra NSG restrita e testes de DNS e TCP 1433 a partir de um pod.
 
 **Pré-requisitos:**
 
 - Laboratórios 6, 7 e 9 concluídos.
+- Cloud Shell em Bash com o contexto do AKS obtido no Laboratório 9; não é necessário `kubectl` local.
 - VNet do AKS e `vnet-imersao` identificadas, com espaços de endereços sem sobreposição.
 - Private Endpoint do SQL aprovado em `snet-dados`.
 - Permissão para administrar peerings, vínculos DNS e regras NSG no escopo aprovado.
+- `aks_node_resource_group` e `aks_vnet_name` reais preenchidos no `terraform.tfvars` local.
 
-**Passos pelo Portal:**
+**Fase 2 pelo Cloud Shell:**
 
-1. Abra o recurso AKS e identifique o Resource Group gerenciado e a VNet usada pelo cluster. Registre nomes confirmados como `[definir]`.
-2. Abra `vnet-imersao` > **Peerings** > **Add** e crie o peering para a VNet do AKS, permitindo acesso à rede virtual.
-3. Abra a VNet do AKS > **Peerings** > **Add** e crie o peering de retorno para `vnet-imersao`, também permitindo acesso à rede virtual.
-4. Habilite tráfego encaminhado somente quando o desenho aprovado exigir esse fluxo. Não habilite trânsito de gateway nem gateway remoto sem necessidade documentada.
-5. Abra a Private DNS Zone:
-
-   ```text
-   privatelink.database.windows.net
-   ```
-
-6. Em **Virtual network links**, confirme o vínculo existente com `vnet-imersao` e crie o vínculo com a VNet do AKS. Mantenha o registro automático desabilitado.
-7. Abra o NSG associado a `snet-dados` e crie uma regra inbound restrita:
-   - origem: prefixos reais da VNet do AKS;
-   - destino: `snet-dados`;
-   - protocolo: TCP;
-   - porta de destino: 1433;
-   - prioridade: `[definir]`.
-8. Valide o caminho privado antes de desabilitar o acesso público do SQL. Depois da validação e aprovação, desabilite o acesso público pelo Portal quando essa for a decisão da arquitetura.
+1. Confirme pelo Portal os dados coletados no Lab 9: Resource Group gerenciado, VNet, prefixos e disponibilidade do Private Endpoint.
+2. No `terraform.tfvars` local, mantenha `deploy_acr = true`, `deploy_aks = true`, preencha os valores reais do AKS e defina `enable_aks_private_connectivity = true`.
+3. Execute `terraform plan -out=tfplan-fase2`.
+4. Revise o plano: ele deve criar exatamente dois peerings, um vínculo da zona `privatelink.database.windows.net` à VNet do AKS e a regra `Allow-AKS-To-SQL-1433`. Ele não deve recriar recursos do Dia 1.
+5. Aplique somente a fase 2 aprovada e acompanhe o estado real dos recursos.
+6. No Portal, confirme os dois peerings conectados, o vínculo DNS com registro automático desabilitado e a regra NSG com origem limitada aos prefixos reais do AKS.
+7. Valide o caminho privado antes de desabilitar o acesso público do SQL. Alterar esse acesso é uma decisão separada, aprovada pelo instrutor, e não faz parte do Terraform do Dia 2.
 
 ```mermaid
 flowchart LR
@@ -892,7 +948,9 @@ kubectl -n azure-shop delete pod netcheck --ignore-not-found
 - [ ] A conexão TCP 1433 é permitida pelo NSG.
 - [ ] O SQL está sem acesso público após a validação do caminho privado.
 
-### Laboratório 11 — GitHub Copilot, Azure MCP e Azure AI Foundry
+**Contingência e custo:** se DNS, peering ou TCP falhar, mantenha o estado atual e corrija a causa antes de alterar o acesso público do SQL. Private Endpoint e recursos de rede associados podem gerar cobrança.
+
+### Laboratório 11 — GitHub Copilot e Azure AI Foundry
 
 **Objetivo:** descobrir ou preparar, de forma controlada, um recurso Microsoft Foundry/Azure OpenAI e um deployment de modelo para uma chamada simples da aplicação.
 
@@ -905,7 +963,8 @@ kubectl -n azure-shop delete pod netcheck --ignore-not-found
 - provider `Microsoft.CognitiveServices` registrado na subscrição;
 - região, modelo, versão e capacidade disponíveis na subscrição: `[definir]`;
 - quota aprovada ou disponível para o modelo e o tipo de deployment: `[definir]`;
-- Azure CLI autenticada ou acesso ao Portal/Foundry portal;
+- GitHub Copilot autenticado no VS Code;
+- Azure Cloud Shell em Bash autenticado ou acesso ao Portal/Foundry portal;
 - Key Vault disponível caso uma integração não suporte autenticação por identidade gerenciada.
 
 **Autenticação e descoberta:**
@@ -921,12 +980,9 @@ kubectl -n azure-shop delete pod netcheck --ignore-not-found
      --output tsv
    ```
 
-2. Use **GitHub Copilot Free com Azure MCP**, se ele estiver disponível e já configurado, somente como assistente de descoberta e orientação. Exemplos de perguntas guiadas:
-   - “Quais recursos `Microsoft.CognitiveServices` já existem nesta subscrição e qual é o estado deles?”
-   - “Quais roles a identidade gerenciada da aplicação possui no recurso `[definir]`?”
-   - “Mostre os passos oficiais para verificar quota e deployments sem revelar chaves.”
-3. Revise cada resposta e cada comando antes de executá-lo. Não cole chaves, connection strings, tokens, dados de clientes ou conteúdo de Key Vault no chat.
-4. Copilot Free e Azure MCP não são requisitos do laboratório. Se não estiverem disponíveis, faça a mesma descoberta pelo Portal, Azure CLI ou Terraform já aprovado pela equipe.
+2. No VS Code, use o GitHub Copilot para explicar os comandos e criar uma checklist de revisão humana. Não use o chat como fonte de dados do Azure nem cole credenciais, connection strings, tokens, dados de clientes ou conteúdo de Key Vault.
+3. Faça a descoberta de recursos, roles, quotas e deployments pelo Portal, Foundry portal ou Azure CLI no Cloud Shell.
+4. Revise cada resposta do Copilot e cada comando antes de executá-lo. O Copilot é obrigatório para a atividade guiada, mas não substitui RBAC, Portal, Cloud Shell, Terraform aprovado ou validação humana.
 
 **Escolha do recurso e deployment:**
 
@@ -935,7 +991,7 @@ kubectl -n azure-shop delete pod netcheck --ignore-not-found
    - recurso Foundry/Azure OpenAI: `[definir]`;
    - projeto Foundry, se aplicável: `[definir]`;
    - região: `[definir]`.
-2. Se não houver recurso existente e houver autorização, use o Portal, Azure CLI ou Terraform documentado pela equipe para criar o recurso. Não crie recursos paralelos apenas para contornar RBAC, quota ou capacidade.
+2. Se não houver recurso existente e houver autorização, use o Portal ou Azure CLI no Cloud Shell para criar o recurso. No Modelo A, o Terraform do Dia 2 não cria recursos de IA. Não crie recursos paralelos apenas para contornar RBAC, quota ou capacidade.
 3. No Foundry portal, abra **Discover** > **Models**, selecione somente um modelo que apareça como disponível para a subscrição e região e crie o deployment. Anote:
    - nome do deployment: `[definir]`;
    - modelo e versão: `[definir]`;
@@ -998,10 +1054,17 @@ kubectl -n azure-shop delete pod netcheck --ignore-not-found
 
 **Você desenvolverá:** Dockerfile, tag imutável, ACR Build, rollout e validação funcional.
 
+**Pré-requisitos:**
+
+- Laboratórios 9 e 10 concluídos.
+- Cloud Shell com contexto do AKS e autorização para ACR Build/rollout.
+- Tag imutável e URL do Service ou Ingress confirmadas.
+- Configuração e segredo SQL disponibilizados por Key Vault/identidade ou canal seguro aprovado; não copie senha para `secret.example.yaml`, manifest, `terraform.tfvars`, Git, logs ou chat.
+
 **Passos:**
 
 1. Revise o `Dockerfile` existente. Ele instala dependências de produção, copia `src/` e `public/`, expõe a porta 3000 e usa `/api/health`.
-2. Se Docker estiver disponível, valide localmente:
+2. **Opcional:** se Docker já estiver disponível, valide localmente:
 
    ```bash
    docker build -t azure-shop:local .
@@ -1042,6 +1105,8 @@ kubectl -n azure-shop delete pod netcheck --ignore-not-found
 8. Valide `/api/health`, catálogo, carrinho, checkout e imagens do catálogo.
 9. Confirme que a aplicação usa o Azure SQL por conectividade privada.
 
+> **Segredo do workload:** `infra/k8s/secret.example.yaml` é apenas um esquema sem valores reais. Para uma demonstração que precise de credenciais SQL, use Key Vault/Workload Identity quando disponível ou crie o Secret por mecanismo seguro e efêmero aprovado pelo instrutor. Nunca registre, imprima ou versione a senha.
+
 **Boas práticas:**
 
 - Use tag imutável; não dependa de `latest` para rastrear rollout.
@@ -1057,6 +1122,8 @@ kubectl -n azure-shop delete pod netcheck --ignore-not-found
 - [ ] O Service ou Ingress expõe a aplicação.
 - [ ] Health check, catálogo, carrinho e checkout funcionam.
 - [ ] O pod usa resolução DNS privada para o Azure SQL.
+
+**Contingência e custo:** se o build remoto, a imagem ou o rollout falhar, pare no Deployment existente, consulte logs no Cloud Shell e corrija a causa antes de uma nova tag. ACR, AKS e exposição de rede têm custo; não mantenha imagens ou clusters de laboratório sem a aprovação de custo.
 
 ### Laboratório Extra — FinOps (opcional)
 
@@ -1156,10 +1223,10 @@ Use a [arquitetura de referência da AzureShop](ARCHITECTURE.md) e sua topologia
 
 | Sintoma | Causa provável | Correção |
 |---|---|---|
-| Azure CLI não autentica | Conta, tenant ou subscrição incorretos | Execute `az login`, confira `az account show` e selecione a subscrição correta. |
+| Azure CLI não autentica | Conta, tenant ou subscrição incorretos | No Cloud Shell, execute `az login` se solicitado, confira `az account show` e selecione a subscrição correta. |
 | Sugestão do Copilot não corresponde ao código | Contexto insuficiente ou resposta não revisada | Compare a sugestão com `package.json`, `src/`, `public/` e `/api/health`; não publique sem revisão humana. |
 | Publicação pelo Deployment Center falha | Origem, runtime ou configuração da aplicação incorreta | Confirme no Portal o runtime Node.js, os arquivos de publicação, as variáveis não secretas e os logs do App Service. |
-| Terraform não inicializa | Terraform ausente, provider inacessível ou pasta errada | Confirme `terraform version`, entre em `infra/terraform` e execute `terraform init`. |
+| Terraform não inicializa | Cloud Shell, provider inacessível ou pasta errada | No Cloud Shell, confirme `terraform version`, entre em `infra/terraform` e execute `terraform init`. |
 | `terraform plan` mostra valores inesperados | Variável, state ou recurso manual divergente | Pare, compare `terraform.tfvars`, state e Portal; não execute apply sem entender a diferença. |
 | Data source da VNet AKS falha no plan | AKS/VNet gerenciada ainda não existe ou nome/RG gerenciado está incorreto | Execute o Laboratório 9 somente depois da criação do AKS e confirme `aks_vnet_name` e `aks_node_resource_group` reais. |
 | Subnet do App Service sem delegação | Delegação não configurada | Delegue a subnet exclusiva a `Microsoft.Web/serverFarms`. |
@@ -1217,9 +1284,10 @@ Antes de encerrar:
 - [Visão geral do Azure Cloud Shell](https://learn.microsoft.com/azure/cloud-shell/overview)
 - [Visão geral do Azure RBAC](https://learn.microsoft.com/azure/role-based-access-control/overview)
 - [Visual Studio Code](https://code.visualstudio.com/)
-- [Planos do GitHub Copilot, incluindo Copilot Free](https://docs.github.com/en/copilot/get-started/plans)
+- [Criar conta no GitHub](https://github.com/signup)
+- [Extensão GitHub Copilot para VS Code](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)
+- [Downloads do PuTTY](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
 - [Downloads do Git](https://git-scm.com/downloads)
-- [Instalar o Terraform](https://developer.hashicorp.com/terraform/install)
 - [Node.js no Azure App Service](https://learn.microsoft.com/azure/app-service/quickstart-nodejs)
 - [VNet Integration para Azure App Service](https://learn.microsoft.com/azure/app-service/overview-vnet-integration)
 - [Azure SQL Database com Private Endpoint](https://learn.microsoft.com/azure/azure-sql/database/private-endpoint-overview)

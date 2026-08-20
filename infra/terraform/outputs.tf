@@ -1,108 +1,49 @@
-output "resource_group_name" {
-  description = "Grupo de Recursos do laboratorio."
-  value       = azurerm_resource_group.main.name
+output "portal_resource_group_name" {
+  description = "RG manual do Dia 1 lido pelo Terraform; este modulo nao o cria."
+  value       = data.azurerm_resource_group.portal.name
 }
 
-output "location" {
-  description = "Regiao dos recursos."
-  value       = azurerm_resource_group.main.location
+output "portal_vnet_id" {
+  description = "VNet manual do Dia 1 usada como destino do peering."
+  value       = data.azurerm_virtual_network.portal.id
 }
 
-output "name_suffix" {
-  description = "Sufixo aplicado aos nomes globalmente unicos."
-  value       = local.suffix
+output "portal_sql_server_fqdn" {
+  description = "FQDN nao secreto do SQL manual do Dia 1."
+  value       = data.azurerm_mssql_server.portal.fully_qualified_domain_name
 }
 
-# Rede
-output "vnet_id" {
-  description = "ID da Rede Virtual."
-  value       = one(module.network[*].vnet_id)
+output "portal_sql_private_endpoint_id" {
+  description = "Private Endpoint manual confirmado pelo Terraform."
+  value       = one(data.azurerm_resources.portal_sql_private_endpoint.resources[*].id)
 }
 
-output "app_subnet_id" {
-  description = "ID da Sub-rede da aplicacao."
-  value       = one(module.network[*].app_subnet_id)
+output "portal_app_service_name" {
+  description = "App Service manual confirmado pelo Terraform."
+  value       = data.azurerm_linux_web_app.portal.name
 }
 
-output "app_service_integration_subnet_id" {
-  description = "ID da subnet exclusiva delegada ao App Service para VNet Integration; null quando a integracao nao estiver habilitada."
-  value       = one(module.network[*].app_service_integration_subnet_id)
+output "acr_name" {
+  description = "Nome do ACR novo; null ate a fase 1 ser habilitada."
+  value       = one(module.container_registry[*].name)
 }
 
-# VM
-output "vm_public_ip" {
-  description = "IP Publico da VM."
-  value       = one(module.virtual_machine[*].public_ip)
-}
-
-output "vm_private_ip" {
-  description = "IP Privado da VM."
-  value       = one(module.virtual_machine[*].private_ip)
-}
-
-output "vm_ssh_command" {
-  description = "Comando SSH pronto para a VM."
-  value       = one(module.virtual_machine[*].ssh_command)
-}
-
-# App Service
-output "app_service_url" {
-  description = "URL publica do App Service."
-  value       = one(module.app_service[*].url)
-}
-
-output "app_service_name" {
-  description = "Nome do App Service."
-  value       = one(module.app_service[*].name)
-}
-
-# Azure SQL (sem expor usuario ou senha)
-output "sql_server_fqdn" {
-  description = "FQDN do servidor logico do Azure SQL."
-  value       = one(module.sql_database[*].server_fqdn)
-}
-
-output "sql_database_name" {
-  description = "Nome do banco de dados."
-  value       = one(module.sql_database[*].database_name)
-}
-
-# Key Vault
-output "key_vault_uri" {
-  description = "URI do Azure Key Vault."
-  value       = one(module.key_vault[*].vault_uri)
-}
-
-# ACR
 output "acr_login_server" {
-  description = "Login server do ACR."
+  description = "Login server nao secreto do ACR novo."
   value       = one(module.container_registry[*].login_server)
 }
 
-# AKS
 output "aks_name" {
-  description = "Nome do cluster AKS."
+  description = "Nome do AKS novo; null ate a fase 1 ser habilitada."
   value       = one(module.aks[*].name)
 }
 
+output "aks_node_resource_group" {
+  description = "RG gerenciado retornado pelo AKS para preparar a fase 2."
+  value       = one(module.aks[*].node_resource_group)
+}
+
 output "aks_get_credentials" {
-  description = "Comando para obter credenciais do AKS."
+  description = "Comando de leitura de credenciais do AKS apos a fase 1."
   value       = one(module.aks[*].get_credentials_command)
-}
-
-# Monitoramento
-output "log_analytics_workspace_id" {
-  description = "ID do workspace Log Analytics."
-  value       = one(module.monitoring[*].workspace_id)
-}
-
-# Azure AI Foundry / Azure OpenAI
-output "ai_endpoint" {
-  description = "Endpoint do Azure OpenAI (Azure AI Foundry)."
-  value       = one(module.ai_foundry[*].endpoint)
-}
-
-output "ai_deployment_name" {
-  description = "Nome do deployment do modelo de IA."
-  value       = one(module.ai_foundry[*].deployment_name)
 }

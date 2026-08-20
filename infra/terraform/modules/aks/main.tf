@@ -55,6 +55,7 @@ resource "azurerm_kubernetes_cluster" "this" {
 }
 
 output "name" { value = azurerm_kubernetes_cluster.this.name }
+output "node_resource_group" { value = azurerm_kubernetes_cluster.this.node_resource_group }
 output "kubelet_object_id" { value = azurerm_kubernetes_cluster.this.kubelet_identity[0].object_id }
 output "oidc_issuer_url" { value = azurerm_kubernetes_cluster.this.oidc_issuer_url }
 output "secrets_provider_object_id" { value = azurerm_kubernetes_cluster.this.key_vault_secrets_provider[0].secret_identity[0].object_id }

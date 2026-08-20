@@ -4,16 +4,12 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 4.0"
-    }
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.6"
+      version = ">= 4.2, < 5.0"
     }
   }
 
-  # Backend remoto opcional. Mantido comentado para uso didatico com estado local.
-  # Para colaboracao real, configure um Storage Account e descomente.
+  # Backend remoto opcional. Para colaboracao real, configure um Storage Account
+  # aprovado antes de habilita-lo; nunca versione state local.
   # backend "azurerm" {}
 }
 
@@ -33,5 +29,3 @@ provider "azurerm" {
     }
   }
 }
-
-provider "random" {}
