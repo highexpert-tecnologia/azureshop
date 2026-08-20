@@ -1,0 +1,56 @@
+# Copie para terraform.tfvars e ajuste. NUNCA versione terraform.tfvars com segredos.
+# Credenciais devem vir de variaveis de ambiente (ex.: TF_VAR_sql_admin_password).
+
+# Contexto
+# subscription_id     = "00000000-0000-0000-0000-000000000000"  # ou exporte ARM_SUBSCRIPTION_ID
+location            = "brazilsouth"
+resource_group_name = "rg-imersao-arquiteto-azure"
+# suffix            = "lab01"  # vazio gera sufixo aleatorio
+
+# Flags de estagio — habilite gradualmente durante o workshop
+deploy_network     = false
+deploy_vm          = false
+deploy_app_service = false
+deploy_sql         = false
+deploy_key_vault   = false
+deploy_acr         = false
+deploy_aks         = false
+deploy_monitoring  = false
+
+# Rede / seguranca — defina seu IP publico (nunca use "*")
+allowed_source_ip = "" # ex.: "203.0.113.10/32"
+
+# VM
+vm_size           = "Standard_B1s"
+vm_admin_username = "azureuser"
+# vm_ssh_public_key = "ssh-rsa AAAA... comentario"  # cole sua chave publica
+
+# App Service
+app_service_sku = "B1"
+# VNet Integration de saida para o Private Endpoint do SQL. A subnet deve ser
+# exclusiva, nao pode hospedar Private Endpoints e deve ser delegada ao App Service.
+# enable_app_service_vnet_integration = true
+# app_service_integration_subnet_name = "[definir]"
+# app_service_integration_subnet_prefix = "[definir]"
+
+# Azure SQL
+sql_admin_login   = "imersaoadmin"
+sql_database_name = "imersao"
+sql_sku_name      = "Basic"
+# sql_admin_password         -> use TF_VAR_sql_admin_password (nao coloque aqui)
+# sql_entra_admin_login      = "instrutor@contoso.com"
+# sql_entra_admin_object_id  = "00000000-0000-0000-0000-000000000000"
+sql_allow_azure_services = false
+
+# ACR
+acr_sku = "Basic"
+
+# AKS
+aks_node_count = 1
+aks_node_size  = "Standard_B2s"
+# aks_vnet_name             = "[definir]"
+# aks_node_resource_group   = "[definir]"
+# aks_vnet_address_prefixes = ["[definir]"]
+
+# Monitoramento / Key Vault
+key_vault_public_access = true

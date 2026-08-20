@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Loja didática da Imersão Arquiteto Azure — Cloud & AI">
+  <title>Azure Shop | Cloud & AI</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header>
+    <a class="brand" href="#">Azure<span>Shop</span></a>
+    <div class="workshop">Imersão Arquiteto Azure — Cloud & AI</div>
+    <button id="cart-button" class="cart-button" aria-label="Abrir carrinho">Carrinho <strong id="cart-count">0</strong></button>
+  </header>
+  <main>
+    <section class="hero">
+      <div><p class="eyebrow">Arquitetura que evolui com você</p><h1>Da VM à AI.<br><span>Uma aplicação, toda a jornada.</span></h1><p>Um e-commerce realista e simples, criado para aprender modernização na Azure.</p><a href="#products" class="primary">Explorar produtos</a></div>
+      <div class="cloud-card"><div>☁️</div><strong>Cloud Native</strong><small>Frontend · API · Banco</small></div>
+    </section>
+    <section id="ai-consultant" class="ai-section">
+      <div class="ai-box">
+        <p class="eyebrow">Powered by Azure OpenAI</p>
+        <h2>🤖 Consultor IA da loja</h2>
+        <p class="ai-lead">Conte o que você procura e a IA recomenda os produtos ideais do nosso catálogo.</p>
+        <form id="ai-form" class="ai-form">
+          <input id="ai-interest" name="interest" placeholder="Ex.: quero organizar meus estudos de arquitetura Azure" autocomplete="off">
+          <button class="primary" type="submit" id="ai-submit">Pedir recomendação</button>
+        </form>
+        <div id="ai-result" class="ai-result" role="status"></div>
+      </div>
+    </section>
+    <section id="products" class="catalog"><div class="section-title"><div><p class="eyebrow">Catálogo</p><h2>Produtos da Imersão</h2></div><span id="status">Conectando à API…</span></div><div id="product-grid" class="grid"></div></section>
+  </main>
+  <aside id="cart" class="drawer" aria-hidden="true">
+    <div class="drawer-head"><h2>Seu Carrinho</h2><button id="close-cart" aria-label="Fechar">×</button></div>
+    <div id="cart-items" class="cart-items"></div>
+    <div class="total"><span>Total</span><strong id="cart-total">R$ 0,00</strong></div>
+    <form id="checkout-form"><label>Nome<input name="customerName" required autocomplete="name"></label><label>E-mail<input name="customerEmail" type="email" required autocomplete="email"></label><button class="primary" type="submit">Finalizar pedido</button></form>
+    <p id="checkout-message" role="status"></p>
+  </aside>
+  <div id="overlay" class="overlay"></div>
+  <footer><strong>AzureShop</strong><span>Aplicação didática · Imersão Arquiteto Azure — Cloud & AI</span><a href="/api/health">Saúde da API</a></footer>
+  <script src="/app.js" defer></script>
+</body>
+</html>
