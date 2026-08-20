@@ -116,7 +116,7 @@ O caminho oficial desta imersão usa **Portal do Azure + Azure Cloud Shell (Bash
 |---|---|---|---|---|
 | **A. Evolução no mesmo ambiente — selecionado** | Dia 1: Portal no RG manual. Dia 2: Cloud Shell + Terraform para ACR, AKS e integrações novas. | AKS cria a VNet gerenciada; a fase 2 cria peering bidirecional, vínculo DNS e regra TCP 1433 para o SQL existente na VNet manual. | O Terraform lê RG, VNet, NSG, App Service, SQL, Private Endpoint e DNS como `data` sources. Preencha seus nomes não secretos após o Dia 1. | Caminho oficial: demonstra a evolução real sem importar recursos manuais ao state. |
 | **B. Ambientes separados** | Dia 1: Portal em um RG manual. Dia 2: Cloud Shell + Terraform em outro RG novo e completo. | Cada ambiente cria sua própria VNet, SQL e caminho privado. O fluxo básico não cria peering entre Dia 1 e Dia 2. | Informar dois RGs e manter nomes/sufixos distintos. Não misturar outputs, DNS, SQL ou ACR entre eles. | Alternativa para turmas que não possam usar o mesmo RG. |
-| **C. Import avançado** | Portal para os labs manuais; Cloud Shell para `terraform import`, `plan` e apply controlado. | Preserva a topologia única do modelo A após os recursos manuais entrarem no state. | Criar uma lista de imports por recurso, executar import em state remoto/controlado e revisar `terraform plan` sem mudanças inesperadas. | Somente para alunos avançados ou instrutor; não é o fluxo padrão. |
+| **C. Import avançado** | Portal para os labs manuais; Cloud Shell para `terraform import`, `plan` e apply controlado. | Preserva a topologia única do modelo A após os recursos manuais entrarem no state. | Criar uma lista de imports por recurso, executar em cópia de trabalho local temporária fora do repositório e revisar `terraform plan` sem mudanças inesperadas. | Somente para alunos avançados ou instrutor; não é o fluxo padrão. |
 
 #### Valores que precisam ser definidos com segurança
 
@@ -823,7 +823,6 @@ Arquivos principais:
 - Não pule o `plan`.
 - Não publique `terraform.tfvars` com segredos.
 - Senhas de VM e SQL são inseridas somente pelo Portal ou por canal seguro quando o laboratório correspondente solicitar; não são variáveis do Terraform do Dia 2.
-- Configure backend remoto antes de trabalho colaborativo.
 - Não instale Terraform ou Azure CLI localmente para este workshop; o Cloud Shell é o caminho suportado.
 
 **Validação:**
