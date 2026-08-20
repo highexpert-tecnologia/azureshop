@@ -23,14 +23,26 @@ function repository() {
   return { provider: 'test', async health(){ return true; }, async listProducts(){ return [{ id: 1, name: 'Caderno AI', price: 10, stock: 3 }]; }, async createOrder(){ return { id: 42, total: 10, status: 'Recebido' }; } };
 }
 async function withServer(fn) { const server = createApp(repository()).listen(0); await once(server, 'listening'); try { await fn(`http://127.0.0.1:${server.address().port}`); } finally { server.close(); } }
+async function withOrderServer(fn) {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'azure-shop-api-'));
+  const repository = createSqliteRepository(path.join(directory, 'loja.db'));
+  const server = createApp(repository).listen(0);
+  await once(server, 'listening');
+  try { await fn(`http://127.0.0.1:${server.address().port}`, repository); } finally {
+    server.close();
+    await repository.close();
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+}
 test('health informa o estado da aplicação', () => withServer(async (url) => { const res = await fetch(`${url}/api/health`); assert.equal(res.status, 200); assert.equal((await res.json()).status, 'ok'); }));
 test('catálogo retorna produtos', () => withServer(async (url) => { const res = await fetch(`${url}/api/products`); assert.equal((await res.json())[0].name, 'Caderno AI'); }));
 test('pedido inválido é rejeitado', () => withServer(async (url) => { const res = await fetch(`${url}/api/orders`, { method:'POST', headers:{'content-type':'application/json'}, body:'{}' }); assert.equal(res.status, 400); }));
-test('pedido válido é criado', () => withServer(async (url) => { const res = await fetch(`${url}/api/orders`, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({customerName:'Aluno',customerEmail:'aluno@example.com',cep:'01310-100',couponCode:'arquitetoazure10',items:[{productId:1,quantity:1}]}) }); assert.equal(res.status, 201); assert.equal((await res.json()).id, 42); }));
+test('pedido válido é criado', () => withServer(async (url) => { const res = await fetch(`${url}/api/orders`, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({customerName:'Aluno',customerEmail:'aluno@example.com',customerSessionId:'11111111-1111-4111-8111-111111111111',paymentMethod:'pix',cep:'01310-100',couponCode:'arquitetoazure10',items:[{productId:1,quantity:1}]}) }); assert.equal(res.status, 201); assert.equal((await res.json()).id, 42); }));
 test('pedido rejeita CEP ou cupom inválido', () => withServer(async (url) => {
-  const invalidCep = await fetch(`${url}/api/orders`, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({customerName:'Aluno',customerEmail:'aluno@example.com',cep:'123',items:[{productId:1,quantity:1}]}) });
+  const baseOrder = { customerName:'Aluno', customerEmail:'aluno@example.com', customerSessionId:'11111111-1111-4111-8111-111111111111', paymentMethod:'pix', items:[{productId:1,quantity:1}] };
+  const invalidCep = await fetch(`${url}/api/orders`, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ ...baseOrder, cep:'123' }) });
   assert.equal(invalidCep.status, 400);
-  const invalidCoupon = await fetch(`${url}/api/orders`, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({customerName:'Aluno',customerEmail:'aluno@example.com',cep:'01310-100',couponCode:'CUPOMINVALIDO',items:[{productId:1,quantity:1}]}) });
+  const invalidCoupon = await fetch(`${url}/api/orders`, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ ...baseOrder, cep:'01310-100', couponCode:'CUPOMINVALIDO' }) });
   assert.equal(invalidCoupon.status, 400);
 }));
 test('catálogo oficial contém exatamente oito produtos com imagens locais', async () => {
@@ -68,22 +80,72 @@ test('pedido persiste subtotal, desconto e frete calculados no servidor', async 
     const order = await repository.createOrder({
       customerName: 'Aluno',
       customerEmail: 'aluno@example.com',
+      customerSessionId: '11111111-1111-4111-8111-111111111111',
+      paymentMethod: 'pix',
       cep: '01310100',
       couponCode: 'arquitetoazureexpert30',
       items: [{ productId: product.id, quantity: 2 }]
     });
-    assert.deepEqual(order, {
-      id: 1,
-      subtotal: 499.8,
-      discount: 149.94,
-      shipping: 13.9,
-      couponCode: 'ARQUITETOAZUREEXPERT30',
-      total: 363.76,
-      status: 'Recebido'
-    });
+    assert.equal(order.id, 1);
+    assert.match(order.orderNumber, /^AZS-\d{8}-001$/);
+    assert.equal(order.subtotal, 499.8);
+    assert.equal(order.discount, 149.94);
+    assert.equal(order.shipping, 13.9);
+    assert.equal(order.couponCode, 'ARQUITETOAZUREEXPERT30');
+    assert.deepEqual(order.payment, { method: 'pix', status: 'pending', amount: 363.76, paidAt: null });
+    assert.equal(order.total, 363.76);
+    assert.equal(order.status, 'pending');
     assert.equal((await repository.getProduct(product.id)).stock, product.stock - 2);
   } finally {
     await repository.close();
     fs.rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test('histórico e detalhe de pedidos são persistidos e isolados por sessão', () => withOrderServer(async (url) => {
+  const session = '11111111-1111-4111-8111-111111111111';
+  const otherSession = '22222222-2222-4222-8222-222222222222';
+  const products = await (await fetch(`${url}/api/products`)).json();
+  const created = await fetch(`${url}/api/orders`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      customerName: 'Aluno',
+      customerEmail: 'aluno@example.com',
+      customerSessionId: session,
+      paymentMethod: 'credit_card',
+      cep: '01310-100',
+      couponCode: 'ARQUITETURAAZUREAI20',
+      items: [{ productId: products[0].id, quantity: 1 }]
+    })
+  });
+  assert.equal(created.status, 201);
+  const order = await created.json();
+  assert.match(order.orderNumber, /^AZS-\d{8}-001$/);
+  const list = await fetch(`${url}/api/orders`, { headers: { 'x-customer-session-id': session } });
+  assert.equal(list.status, 200);
+  const orders = await list.json();
+  assert.equal(orders.length, 1);
+  assert.equal(orders[0].payment.status, 'pending');
+  assert.equal(orders[0].shipping.amount, 13.9);
+  const search = await fetch(`${url}/api/orders?search=${order.orderNumber}`, { headers: { 'x-customer-session-id': session } });
+  assert.equal((await search.json()).length, 1);
+  const filtered = await fetch(`${url}/api/orders?status=pending`, { headers: { 'x-customer-session-id': session } });
+  assert.equal((await filtered.json()).length, 1);
+  const detail = await fetch(`${url}/api/orders/${order.orderNumber}`, { headers: { 'x-customer-session-id': session } });
+  assert.equal(detail.status, 200);
+  const detailOrder = await detail.json();
+  assert.equal(detailOrder.items[0].name, products[0].name);
+  assert.equal(detailOrder.items[0].unitPrice, products[0].price);
+  assert.equal(detailOrder.history[0].description, 'Pedido criado');
+  assert.equal(detailOrder.invoice.status, 'processing');
+  const ordersPage = await fetch(`${url}/orders`);
+  assert.equal(ordersPage.status, 200);
+  assert.match(await ordersPage.text(), /id="orders-page"/);
+  const detailPage = await fetch(`${url}/orders/${order.orderNumber}`);
+  assert.equal(detailPage.status, 200);
+  const forbidden = await fetch(`${url}/api/orders/${order.orderNumber}`, { headers: { 'x-customer-session-id': otherSession } });
+  assert.equal(forbidden.status, 404);
+  const noSession = await fetch(`${url}/api/orders`);
+  assert.equal(noSession.status, 401);
+}));

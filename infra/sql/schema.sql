@@ -18,15 +18,33 @@ IF OBJECT_ID('orders', 'U') IS NULL
 BEGIN
   CREATE TABLE orders (
     id             INT IDENTITY PRIMARY KEY,
+    order_number   NVARCHAR(32) NULL,
+    customer_session_id NVARCHAR(36) NULL,
     customer_name  NVARCHAR(120) NOT NULL,
     customer_email NVARCHAR(200) NOT NULL,
+    customer_phone NVARCHAR(30) NULL,
+    customer_document NVARCHAR(30) NULL,
+    subtotal       DECIMAL(10,2) NOT NULL DEFAULT 0,
     total          DECIMAL(10,2) NOT NULL,
     cep            NVARCHAR(8) NULL,
     shipping       DECIMAL(10,2) NOT NULL DEFAULT 0,
+    shipping_city  NVARCHAR(120) NULL,
+    shipping_state NVARCHAR(20) NULL,
+    shipping_address NVARCHAR(500) NULL,
     coupon_code    NVARCHAR(40) NULL,
+    discount_percent DECIMAL(5,2) NOT NULL DEFAULT 0,
     discount_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
-    status         NVARCHAR(30)  NOT NULL DEFAULT N'Recebido',
-    created_at     DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
+    payment_method NVARCHAR(30) NULL,
+    payment_status NVARCHAR(30) NULL,
+    payment_amount DECIMAL(10,2) NULL,
+    payment_paid_at DATETIME2 NULL,
+    invoice_status NVARCHAR(30) NOT NULL DEFAULT N'processing',
+    invoice_number NVARCHAR(80) NULL,
+    invoice_issued_at DATETIME2 NULL,
+    invoice_pdf_url NVARCHAR(1000) NULL,
+    status         NVARCHAR(30)  NOT NULL DEFAULT N'pending',
+    created_at     DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    updated_at     DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
   );
 END;
 
@@ -36,8 +54,21 @@ BEGIN
     id         INT IDENTITY PRIMARY KEY,
     order_id   INT NOT NULL REFERENCES orders(id),
     product_id INT NOT NULL REFERENCES products(id),
+    product_name NVARCHAR(120) NULL,
+    product_image NVARCHAR(255) NULL,
     quantity   INT NOT NULL,
     unit_price DECIMAL(10,2) NOT NULL
+  );
+END;
+
+IF OBJECT_ID('order_history', 'U') IS NULL
+BEGIN
+  CREATE TABLE order_history (
+    id          INT IDENTITY PRIMARY KEY,
+    order_id    INT NOT NULL REFERENCES orders(id),
+    status      NVARCHAR(30) NOT NULL,
+    description NVARCHAR(200) NOT NULL,
+    created_at  DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
   );
 END;
 
@@ -58,6 +89,69 @@ IF COL_LENGTH('orders', 'coupon_code') IS NULL
 
 IF COL_LENGTH('orders', 'discount_amount') IS NULL
   ALTER TABLE orders ADD discount_amount DECIMAL(10,2) NOT NULL CONSTRAINT DF_orders_discount_amount DEFAULT 0 WITH VALUES;
+
+IF COL_LENGTH('orders', 'order_number') IS NULL
+  ALTER TABLE orders ADD order_number NVARCHAR(32) NULL;
+
+IF COL_LENGTH('orders', 'customer_session_id') IS NULL
+  ALTER TABLE orders ADD customer_session_id NVARCHAR(36) NULL;
+
+IF COL_LENGTH('orders', 'customer_phone') IS NULL
+  ALTER TABLE orders ADD customer_phone NVARCHAR(30) NULL;
+
+IF COL_LENGTH('orders', 'customer_document') IS NULL
+  ALTER TABLE orders ADD customer_document NVARCHAR(30) NULL;
+
+IF COL_LENGTH('orders', 'subtotal') IS NULL
+  ALTER TABLE orders ADD subtotal DECIMAL(10,2) NOT NULL CONSTRAINT DF_orders_subtotal DEFAULT 0 WITH VALUES;
+
+IF COL_LENGTH('orders', 'shipping_city') IS NULL
+  ALTER TABLE orders ADD shipping_city NVARCHAR(120) NULL;
+
+IF COL_LENGTH('orders', 'shipping_state') IS NULL
+  ALTER TABLE orders ADD shipping_state NVARCHAR(20) NULL;
+
+IF COL_LENGTH('orders', 'shipping_address') IS NULL
+  ALTER TABLE orders ADD shipping_address NVARCHAR(500) NULL;
+
+IF COL_LENGTH('orders', 'discount_percent') IS NULL
+  ALTER TABLE orders ADD discount_percent DECIMAL(5,2) NOT NULL CONSTRAINT DF_orders_discount_percent DEFAULT 0 WITH VALUES;
+
+IF COL_LENGTH('orders', 'payment_method') IS NULL
+  ALTER TABLE orders ADD payment_method NVARCHAR(30) NULL;
+
+IF COL_LENGTH('orders', 'payment_status') IS NULL
+  ALTER TABLE orders ADD payment_status NVARCHAR(30) NULL;
+
+IF COL_LENGTH('orders', 'payment_amount') IS NULL
+  ALTER TABLE orders ADD payment_amount DECIMAL(10,2) NULL;
+
+IF COL_LENGTH('orders', 'payment_paid_at') IS NULL
+  ALTER TABLE orders ADD payment_paid_at DATETIME2 NULL;
+
+IF COL_LENGTH('orders', 'invoice_status') IS NULL
+  ALTER TABLE orders ADD invoice_status NVARCHAR(30) NOT NULL CONSTRAINT DF_orders_invoice_status DEFAULT N'processing' WITH VALUES;
+
+IF COL_LENGTH('orders', 'invoice_number') IS NULL
+  ALTER TABLE orders ADD invoice_number NVARCHAR(80) NULL;
+
+IF COL_LENGTH('orders', 'invoice_issued_at') IS NULL
+  ALTER TABLE orders ADD invoice_issued_at DATETIME2 NULL;
+
+IF COL_LENGTH('orders', 'invoice_pdf_url') IS NULL
+  ALTER TABLE orders ADD invoice_pdf_url NVARCHAR(1000) NULL;
+
+IF COL_LENGTH('orders', 'updated_at') IS NULL
+  ALTER TABLE orders ADD updated_at DATETIME2 NOT NULL CONSTRAINT DF_orders_updated_at DEFAULT SYSUTCDATETIME() WITH VALUES;
+
+IF COL_LENGTH('order_items', 'product_name') IS NULL
+  ALTER TABLE order_items ADD product_name NVARCHAR(120) NULL;
+
+IF COL_LENGTH('order_items', 'product_image') IS NULL
+  ALTER TABLE order_items ADD product_image NVARCHAR(255) NULL;
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_orders_order_number' AND object_id = OBJECT_ID('orders'))
+  CREATE UNIQUE INDEX UX_orders_order_number ON orders(order_number) WHERE order_number IS NOT NULL;
 
 DECLARE @catalog TABLE (
   name NVARCHAR(120) NOT NULL,

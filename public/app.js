@@ -1,7 +1,10 @@
 const checkout = window.CheckoutUtils;
 const state = { products: [], cart: new Map(), cep: '', couponCode: '' };
 const STORAGE_KEY = 'azureShopCheckout';
+const ORDER_SESSION_KEY = 'azureShopOrderSessionId';
+const CUSTOMER_EMAIL_KEY = 'azureShopCustomerEmail';
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+const dateTime = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
 const $ = (selector) => document.querySelector(selector);
 const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 
@@ -20,6 +23,22 @@ function restoreCheckoutState() {
     state.cep = checkout.normalizeCep(stored?.cep);
     state.couponCode = checkout.getCoupon(stored?.couponCode)?.code || '';
   } catch {}
+}
+
+function customerSessionId() {
+  try {
+    const existing = localStorage.getItem(ORDER_SESSION_KEY);
+    if (existing) return existing;
+    const value = crypto.randomUUID();
+    localStorage.setItem(ORDER_SESSION_KEY, value);
+    return value;
+  } catch {
+    return crypto.randomUUID();
+  }
+}
+
+function ordersHeaders() {
+  return { 'x-customer-session-id': customerSessionId() };
 }
 
 function setFeedback(selector, message, type = '') {
@@ -97,6 +116,108 @@ function toggleCart(open) {
   $('#cart').classList.toggle('open', open);
   $('#overlay').classList.toggle('open', open);
   $('#cart').setAttribute('aria-hidden', String(!open));
+}
+
+function formatDate(value) {
+  return value ? dateTime.format(new Date(value.endsWith?.('Z') ? value : `${value}Z`)) : '—';
+}
+
+function orderStatusLabel(status) {
+  return checkout.ORDER_STATUSES[status] || status || 'Pendente';
+}
+
+function paymentLabel(method) {
+  return checkout.PAYMENT_METHODS[method]?.label || 'Não configurado';
+}
+
+function paymentStatusLabel(status) {
+  return status === 'paid' ? 'Aprovado' : 'Aguardando pagamento';
+}
+
+function statusBadge(status) {
+  return `<span class="status-badge status-${escapeHtml(status || 'pending')}">${escapeHtml(orderStatusLabel(status))}</span>`;
+}
+
+function renderOrders(orders) {
+  const content = $('#orders-content');
+  if (!orders.length) {
+    content.innerHTML = '<div class="orders-empty"><h2>Você ainda não possui pedidos.</h2><p>Explore o AzureShop e faça sua primeira compra.</p><a class="primary" href="/#products">Ver produtos</a></div>';
+    return;
+  }
+  content.innerHTML = `<div class="orders-list">${orders.map((order) => `<article class="order-card"><div><p class="order-number">#${escapeHtml(order.orderNumber)}</p><p class="order-date">${formatDate(order.createdAt)} · ${order.itemCount} item(ns)</p></div><div class="order-statuses">${statusBadge(order.status)}<span class="payment-status">${escapeHtml(paymentStatusLabel(order.payment.status))}</span></div><dl class="order-financials"><div><dt>Produtos</dt><dd>${money.format(order.subtotal)}</dd></div><div><dt>Desconto</dt><dd>- ${money.format(order.coupon?.discountAmount || 0)}</dd></div><div><dt>Frete</dt><dd>${money.format(order.shipping.amount)}</dd></div><div class="order-total"><dt>Total</dt><dd>${money.format(order.total)}</dd></div></dl><div class="order-card-footer"><span>${escapeHtml(paymentLabel(order.payment.method))}</span><a class="secondary-button" href="/orders/${encodeURIComponent(order.orderNumber)}">Ver detalhes</a></div></article>`).join('')}</div>`;
+}
+
+async function loadOrders() {
+  const content = $('#orders-content');
+  content.innerHTML = '<p>Carregando pedidos…</p>';
+  const params = new URLSearchParams();
+  const search = $('#order-search').value.trim();
+  const status = $('#order-status-filter').value;
+  if (search) params.set('search', search);
+  if (status) params.set('status', status);
+  try {
+    const response = await fetch(`/api/orders?${params}`, { headers: ordersHeaders() });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error);
+    renderOrders(result);
+  } catch {
+    content.innerHTML = '<p class="error">Não foi possível carregar seus pedidos.</p>';
+  }
+}
+
+function renderOrderDetail(order) {
+  const detail = $('#order-detail-view');
+  const success = new URLSearchParams(window.location.search).has('created');
+  const coupon = order.coupon
+    ? `<div class="detail-row"><span>Cupom ${escapeHtml(order.coupon.code)} (${order.coupon.discountPercent}%)</span><strong>- ${money.format(order.coupon.discountAmount)}</strong></div>`
+    : '<div class="detail-row"><span>Cupom</span><strong>Nenhum cupom utilizado</strong></div>';
+  const invoice = order.invoice.number
+    ? `<p>NF-e #${escapeHtml(order.invoice.number)} · Emitida em ${formatDate(order.invoice.issuedAt)}</p>${order.invoice.pdfUrl ? `<a class="secondary-button" href="${escapeHtml(order.invoice.pdfUrl)}">Baixar PDF</a>` : ''}`
+    : '<p>Em processamento</p>';
+  detail.innerHTML = `
+    ${success ? `<section class="order-success"><h1>Pedido realizado com sucesso!</h1><p>Pedido #${escapeHtml(order.orderNumber)} · Total ${money.format(order.total)}</p><a class="secondary-button" href="/#products">Continuar comprando</a></section>` : ''}
+    <a class="back-link" href="/orders">← Meus pedidos</a>
+    <header class="order-detail-head"><div><p class="order-number">Pedido #${escapeHtml(order.orderNumber)}</p><h1>Detalhes do pedido</h1><p>Realizado em ${formatDate(order.createdAt)}</p></div><div>${statusBadge(order.status)}<p>${escapeHtml(paymentStatusLabel(order.payment.status))}</p></div></header>
+    <div class="order-detail-grid">
+      <section class="detail-section order-items-section"><h2>Produtos comprados</h2>${order.items.map((item) => `<article class="order-item"><img src="${encodeURI(item.image)}" alt="${escapeHtml(item.name)}"><div><h3>${escapeHtml(item.name)}</h3><p>Quantidade: ${item.quantity}</p><p>Valor unitário: ${money.format(item.unitPrice)}</p></div><strong>${money.format(item.totalPrice)}</strong></article>`).join('')}</section>
+      <aside class="detail-section financial-section"><h2>Resumo do pedido</h2><div class="detail-row"><span>Produtos</span><strong>${money.format(order.subtotal)}</strong></div>${coupon}<div class="detail-row"><span>Frete</span><strong>${money.format(order.shipping.amount)}</strong></div><div class="detail-total"><span>Total</span><strong>${money.format(order.total)}</strong></div></aside>
+      <section class="detail-section"><h2>Entrega</h2><p>CEP: ${escapeHtml(checkout.formatCep(order.shipping.cep || ''))}</p>${order.shipping.city ? `<p>${escapeHtml(order.shipping.city)}${order.shipping.state ? ` · ${escapeHtml(order.shipping.state)}` : ''}</p>` : '<p>Endereço será confirmado no pagamento.</p>'}</section>
+      <section class="detail-section"><h2>Cliente</h2><p>${escapeHtml(order.customer.name)}</p><p>${escapeHtml(order.customer.email)}</p>${order.customer.phone ? `<p>${escapeHtml(order.customer.phone)}</p>` : ''}</section>
+      <section class="detail-section"><h2>Faturamento</h2><p>Status: ${escapeHtml(paymentStatusLabel(order.payment.status))}</p><p>Forma: ${escapeHtml(paymentLabel(order.payment.method))}</p><p>Valor: ${money.format(order.payment.amount)}</p></section>
+      <section class="detail-section"><h2>Nota Fiscal</h2>${invoice}</section>
+      <section class="detail-section history-section"><h2>Histórico</h2><ol>${order.history.map((event) => `<li><strong>${escapeHtml(event.description)}</strong><span>${formatDate(event.createdAt)}</span></li>`).join('')}</ol></section>
+    </div>
+  `;
+}
+
+async function loadOrderDetail(orderNumber) {
+  const detail = $('#order-detail-view');
+  detail.innerHTML = '<p>Carregando pedido…</p>';
+  try {
+    const response = await fetch(`/api/orders/${encodeURIComponent(orderNumber)}`, { headers: ordersHeaders() });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error);
+    renderOrderDetail(result);
+  } catch {
+    detail.innerHTML = '<a class="back-link" href="/orders">← Meus pedidos</a><p class="error">Pedido não encontrado ou não disponível para esta sessão.</p>';
+  }
+}
+
+function initializeOrdersPage() {
+  const parts = window.location.pathname.split('/').filter(Boolean);
+  const orderNumber = parts[1];
+  $('#store-content').hidden = true;
+  $('#orders-page').hidden = false;
+  document.title = 'Meus pedidos | AzureShop';
+  if (orderNumber) {
+    $('#orders-list-view').hidden = true;
+    $('#order-detail-view').hidden = false;
+    loadOrderDetail(orderNumber);
+    return;
+  }
+  $('#order-search').addEventListener('input', loadOrders);
+  $('#order-status-filter').addEventListener('change', loadOrders);
+  loadOrders();
 }
 
 document.addEventListener('click', (event) => {
@@ -179,7 +300,13 @@ $('#checkout-form').addEventListener('submit', async (event) => {
   const response = await fetch('/api/orders', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...data, cep: state.cep, couponCode: state.couponCode, items: [...state.cart].map(([productId, quantity]) => ({ productId, quantity })) })
+    body: JSON.stringify({
+      ...data,
+      cep: state.cep,
+      couponCode: state.couponCode,
+      customerSessionId: customerSessionId(),
+      items: [...state.cart].map(([productId, quantity]) => ({ productId, quantity }))
+    })
   });
   const result = await response.json();
   if (!response.ok) {
@@ -187,23 +314,18 @@ $('#checkout-form').addEventListener('submit', async (event) => {
     message.className = 'error';
     return;
   }
-  message.textContent = `Pedido #${result.id} recebido! Total: ${money.format(result.total)}.`;
-  message.className = 'success';
+  try { localStorage.setItem(CUSTOMER_EMAIL_KEY, data.customerEmail); } catch {}
   state.cart.clear();
   state.cep = '';
   state.couponCode = '';
   saveCheckoutState();
-  $('#coupon-code').value = '';
-  event.target.reset();
-  setFeedback('#coupon-message', '');
-  setFeedback('#cep-message', '');
-  renderCart();
-  await loadProducts();
+  window.location.assign(`/orders/${encodeURIComponent(result.orderNumber)}?created=1`);
 });
 
 restoreCheckoutState();
 renderCart();
-loadProducts();
+if (window.location.pathname.startsWith('/orders')) initializeOrdersPage();
+else loadProducts();
 
 const aiForm = $('#ai-form');
 if (aiForm) {

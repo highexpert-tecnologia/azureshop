@@ -9,6 +9,20 @@
     ARQUITETURAAZUREAI20: Object.freeze({ code: 'ARQUITETURAAZUREAI20', discountPercent: 20 }),
     ARQUITETOAZUREEXPERT30: Object.freeze({ code: 'ARQUITETOAZUREEXPERT30', discountPercent: 30 })
   });
+  const PAYMENT_METHODS = Object.freeze({
+    pix: Object.freeze({ code: 'pix', label: 'PIX' }),
+    credit_card: Object.freeze({ code: 'credit_card', label: 'Cartão de crédito' }),
+    boleto: Object.freeze({ code: 'boleto', label: 'Boleto' })
+  });
+  const ORDER_STATUSES = Object.freeze({
+    pending: 'Pendente',
+    paid: 'Pago',
+    processing: 'Processando',
+    shipped: 'Enviado',
+    delivered: 'Entregue',
+    cancelled: 'Cancelado',
+    refunded: 'Reembolsado'
+  });
 
   function normalizeCoupon(code) {
     return typeof code === 'string' ? code.trim().toUpperCase() : '';
@@ -16,6 +30,10 @@
 
   function getCoupon(code) {
     return COUPONS[normalizeCoupon(code)] || null;
+  }
+
+  function getPaymentMethod(code) {
+    return PAYMENT_METHODS[code] || null;
   }
 
   function normalizeCep(cep) {
@@ -55,5 +73,18 @@
     };
   }
 
-  return { COUPONS, SHIPPING_OPTIONS, normalizeCoupon, getCoupon, normalizeCep, formatCep, calculateShipping, calculateOrderSummary, roundMoney };
+  return {
+    COUPONS,
+    PAYMENT_METHODS,
+    ORDER_STATUSES,
+    SHIPPING_OPTIONS,
+    normalizeCoupon,
+    getCoupon,
+    getPaymentMethod,
+    normalizeCep,
+    formatCep,
+    calculateShipping,
+    calculateOrderSummary,
+    roundMoney
+  };
 });

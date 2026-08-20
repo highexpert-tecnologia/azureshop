@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const config = require('./config');
 const aiClient = require('./ai/client');
 const { calculateShipping, getCoupon, normalizeCep } = require('../public/checkout-utils');
+const { normalizeCustomerSessionId } = require('./orders');
 
 function createApp(repository) {
   const app = express();
@@ -22,10 +23,12 @@ function createApp(repository) {
   });
   app.post('/api/orders', async (req, res, next) => {
     try {
-      const { customerName, customerEmail, items, couponCode } = req.body;
+      const { customerName, customerEmail, items, couponCode, paymentMethod } = req.body;
       if (!customerName?.trim() || !/^\S+@\S+\.\S+$/.test(customerEmail || '') || !Array.isArray(items) || !items.length) {
         return res.status(400).json({ error: 'Informe nome, e-mail válido e ao menos um item.' });
       }
+      const customerSessionId = normalizeCustomerSessionId(req.body.customerSessionId);
+      if (!customerSessionId) return res.status(400).json({ error: 'Sessão do cliente inválida.' });
       const cep = normalizeCep(req.body.cep);
       if (calculateShipping(cep) === null) {
         return res.status(400).json({ error: 'Informe um CEP válido para calcular o frete.' });
@@ -39,9 +42,31 @@ function createApp(repository) {
         customerEmail: customerEmail.trim(),
         items,
         cep,
-        couponCode: getCoupon(normalizedCoupon)?.code || null
+        couponCode: getCoupon(normalizedCoupon)?.code || null,
+        paymentMethod,
+        customerSessionId
       });
       res.status(201).json(order);
+    } catch (error) { next(error); }
+  });
+  app.get('/api/orders', async (req, res, next) => {
+    try {
+      const customerSessionId = normalizeCustomerSessionId(req.get('x-customer-session-id'));
+      if (!customerSessionId) return res.status(401).json({ error: 'Sessão do cliente necessária.' });
+      res.json(await repository.listOrders({
+        customerSessionId,
+        status: typeof req.query.status === 'string' ? req.query.status : '',
+        search: typeof req.query.search === 'string' ? req.query.search : ''
+      }));
+    } catch (error) { next(error); }
+  });
+  app.get('/api/orders/:orderNumber', async (req, res, next) => {
+    try {
+      const customerSessionId = normalizeCustomerSessionId(req.get('x-customer-session-id'));
+      if (!customerSessionId) return res.status(401).json({ error: 'Sessão do cliente necessária.' });
+      const order = await repository.getOrder({ orderNumber: req.params.orderNumber, customerSessionId });
+      if (!order) return res.status(404).json({ error: 'Pedido não encontrado.' });
+      res.json(order);
     } catch (error) { next(error); }
   });
   app.post('/api/ai/recommendations', async (req, res, next) => {
@@ -54,6 +79,8 @@ function createApp(repository) {
       res.json(result);
     } catch (error) { next(error); }
   });
+  app.get('/orders', (_req, res) => res.sendFile(path.resolve(__dirname, '../public/index.html')));
+  app.get('/orders/:orderNumber', (_req, res) => res.sendFile(path.resolve(__dirname, '../public/index.html')));
   app.use('/api', (_req, res) => res.status(404).json({ error: 'Recurso não encontrado.' }));
   app.use((error, _req, res, _next) => {
     console.error(error);

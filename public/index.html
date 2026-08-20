@@ -11,10 +11,10 @@
 <body>
   <header>
     <a class="brand" href="#">Azure<span>Shop</span></a>
-    <div class="workshop">Imersão Arquiteto Azure — Cloud & AI</div>
-    <button id="cart-button" class="cart-button" aria-label="Abrir carrinho">Carrinho <strong id="cart-count">0</strong></button>
+  <nav class="main-nav" aria-label="Navegação principal"><a href="/#products">Produtos</a><a href="/orders">Meus pedidos</a></nav>
+  <div class="header-actions"><div class="workshop">Imersão Arquiteto Azure — Cloud & AI</div><button id="cart-button" class="cart-button" aria-label="Abrir carrinho">Carrinho <strong id="cart-count">0</strong></button></div>
   </header>
-  <main>
+<main id="store-content">
     <section class="hero">
       <div><p class="eyebrow">Arquitetura que evolui com você</p><h1>Da VM à AI.<br><span>Uma aplicação, toda a jornada.</span></h1><p>Um e-commerce realista e simples, criado para aprender modernização na Azure.</p><a href="#products" class="primary">Explorar produtos</a></div>
       <div class="cloud-card"><div>☁️</div><strong>Cloud Native</strong><small>Frontend · API · Banco</small></div>
@@ -55,10 +55,25 @@
       </div>
       <div class="total"><span>Total</span><strong id="cart-total">R$ 0,00</strong></div>
     </section>
-    <form id="checkout-form"><label>Nome<input name="customerName" required autocomplete="name"></label><label>E-mail<input name="customerEmail" type="email" required autocomplete="email"></label><button class="primary" type="submit">Finalizar pedido</button></form>
+    <form id="checkout-form"><label>Nome<input name="customerName" required autocomplete="name"></label><label>E-mail<input name="customerEmail" type="email" required autocomplete="email"></label><label>Forma de pagamento<select name="paymentMethod"><option value="pix">PIX</option><option value="credit_card">Cartão de crédito</option><option value="boleto">Boleto</option></select></label><button class="primary" type="submit">Finalizar pedido</button></form>
     <p id="checkout-message" role="status"></p>
   </aside>
   <div id="overlay" class="overlay"></div>
+  <main id="orders-page" hidden>
+    <section class="orders-shell">
+      <div id="orders-list-view">
+        <p class="eyebrow">Histórico de compras</p>
+        <h1>Meus pedidos</h1>
+        <p class="orders-intro">Acompanhe seus pedidos, pagamentos e informações de faturamento.</p>
+        <div class="order-filters">
+          <label for="order-search">Buscar pedido<input id="order-search" type="search" placeholder="AZS-20260820-001"></label>
+          <label for="order-status-filter">Status<select id="order-status-filter"><option value="">Todos</option><option value="pending">Pendentes</option><option value="paid">Pagos</option><option value="processing">Processando</option><option value="shipped">Enviados</option><option value="delivered">Entregues</option><option value="cancelled">Cancelados</option></select></label>
+        </div>
+        <div id="orders-content" aria-live="polite"></div>
+      </div>
+      <section id="order-detail-view" hidden aria-live="polite"></section>
+    </section>
+  </main>
   <footer><strong>AzureShop</strong><span>Aplicação didática · Imersão Arquiteto Azure — Cloud & AI</span><a href="/api/health">Saúde da API</a></footer>
   <script src="/checkout-utils.js" defer></script>
   <script src="/app.js" defer></script>
