@@ -115,7 +115,7 @@ async function synchronizeCatalog(pool) {
         created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
       );
     IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_orders_order_number' AND object_id = OBJECT_ID('orders'))
-      CREATE UNIQUE INDEX UX_orders_order_number ON orders(order_number) WHERE order_number IS NOT NULL;
+      EXEC(N'CREATE UNIQUE INDEX UX_orders_order_number ON orders(order_number) WHERE order_number IS NOT NULL');
   `);
 
   const transaction = new sql.Transaction(pool);
