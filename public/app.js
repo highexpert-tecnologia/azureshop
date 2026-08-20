@@ -29,12 +29,23 @@ function customerSessionId() {
   try {
     const existing = localStorage.getItem(ORDER_SESSION_KEY);
     if (existing) return existing;
-    const value = crypto.randomUUID();
+    const value = createCustomerSessionId();
     localStorage.setItem(ORDER_SESSION_KEY, value);
     return value;
   } catch {
-    return crypto.randomUUID();
+    return createCustomerSessionId();
   }
+}
+
+function createCustomerSessionId() {
+  if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+  const values = new Uint8Array(16);
+  if (window.crypto?.getRandomValues) window.crypto.getRandomValues(values);
+  else for (let index = 0; index < values.length; index += 1) values[index] = Math.floor(Math.random() * 256);
+  values[6] = (values[6] & 0x0f) | 0x40;
+  values[8] = (values[8] & 0x3f) | 0x80;
+  const hex = [...values].map((value) => value.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
 function ordersHeaders() {
