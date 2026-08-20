@@ -2,6 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const Database = require('better-sqlite3');
 const { PRODUCT_CATALOG } = require('../catalog');
+const { calculateOrderSummary } = require('../../public/checkout-utils');
 
 function synchronizeCatalog(db) {
   const columns = db.prepare('PRAGMA table_info(products)').all();
@@ -58,6 +59,10 @@ function createSqliteRepository(filename) {
       customer_name TEXT NOT NULL,
       customer_email TEXT NOT NULL,
       total REAL NOT NULL,
+      cep TEXT,
+      shipping REAL NOT NULL DEFAULT 0,
+      coupon_code TEXT,
+      discount REAL NOT NULL DEFAULT 0,
       status TEXT NOT NULL DEFAULT 'Recebido',
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
@@ -69,6 +74,11 @@ function createSqliteRepository(filename) {
       unit_price REAL NOT NULL
     );
   `);
+  const orderColumns = db.prepare('PRAGMA table_info(orders)').all();
+  if (!orderColumns.some((column) => column.name === 'cep')) db.exec('ALTER TABLE orders ADD COLUMN cep TEXT');
+  if (!orderColumns.some((column) => column.name === 'shipping')) db.exec('ALTER TABLE orders ADD COLUMN shipping REAL NOT NULL DEFAULT 0');
+  if (!orderColumns.some((column) => column.name === 'coupon_code')) db.exec('ALTER TABLE orders ADD COLUMN coupon_code TEXT');
+  if (!orderColumns.some((column) => column.name === 'discount')) db.exec('ALTER TABLE orders ADD COLUMN discount REAL NOT NULL DEFAULT 0');
 
   synchronizeCatalog(db);
 
@@ -76,27 +86,37 @@ function createSqliteRepository(filename) {
     provider: 'sqlite',
     async listProducts() { return db.prepare('SELECT * FROM products WHERE catalog_visible = 1 ORDER BY id').all(); },
     async getProduct(id) { return db.prepare('SELECT * FROM products WHERE id = ?').get(id); },
-    async createOrder({ customerName, customerEmail, items }) {
+    async createOrder({ customerName, customerEmail, items, cep, couponCode }) {
       return db.transaction(() => {
-        let total = 0;
+        let subtotal = 0;
         const resolved = items.map(({ productId, quantity }) => {
           const product = db.prepare('SELECT * FROM products WHERE id = ?').get(productId);
           if (!product) throw Object.assign(new Error(`Produto ${productId} não encontrado.`), { status: 400 });
           if (!Number.isInteger(quantity) || quantity < 1 || quantity > product.stock) {
             throw Object.assign(new Error(`Quantidade inválida para ${product.name}.`), { status: 400 });
           }
-          total += product.price * quantity;
+          subtotal += product.price * quantity;
           return { product, quantity };
         });
-        const order = db.prepare('INSERT INTO orders (customer_name, customer_email, total) VALUES (?, ?, ?)')
-          .run(customerName, customerEmail, Number(total.toFixed(2)));
+        const summary = calculateOrderSummary(subtotal, couponCode, cep);
+        if (summary.shipping === null) throw Object.assign(new Error('Informe um CEP válido para calcular o frete.'), { status: 400 });
+        const order = db.prepare('INSERT INTO orders (customer_name, customer_email, total, cep, shipping, coupon_code, discount) VALUES (?, ?, ?, ?, ?, ?, ?)')
+          .run(customerName, customerEmail, summary.total, cep, summary.shipping, summary.coupon?.code || null, summary.discount);
         const addItem = db.prepare('INSERT INTO order_items (order_id, product_id, quantity, unit_price) VALUES (?, ?, ?, ?)');
         const reduceStock = db.prepare('UPDATE products SET stock = stock - ? WHERE id = ?');
         resolved.forEach(({ product, quantity }) => {
           addItem.run(order.lastInsertRowid, product.id, quantity, product.price);
           reduceStock.run(quantity, product.id);
         });
-        return { id: Number(order.lastInsertRowid), total: Number(total.toFixed(2)), status: 'Recebido' };
+        return {
+          id: Number(order.lastInsertRowid),
+          subtotal: summary.products,
+          discount: summary.discount,
+          shipping: summary.shipping,
+          couponCode: summary.coupon?.code || null,
+          total: summary.total,
+          status: 'Recebido'
+        };
       })();
     },
     async health() { db.prepare('SELECT 1').get(); return true; },

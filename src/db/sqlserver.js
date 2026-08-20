@@ -1,5 +1,6 @@
 const sql = require('mssql');
 const { PRODUCT_CATALOG } = require('../catalog');
+const { calculateOrderSummary } = require('../../public/checkout-utils');
 
 async function synchronizeCatalog(pool) {
   await pool.request().query(`
@@ -7,6 +8,14 @@ async function synchronizeCatalog(pool) {
       ALTER TABLE products ADD catalog_visible BIT NOT NULL CONSTRAINT DF_products_catalog_visible DEFAULT 1 WITH VALUES;
     IF COL_LENGTH('products', 'image') < 510
       ALTER TABLE products ALTER COLUMN image NVARCHAR(255) NOT NULL;
+    IF COL_LENGTH('orders', 'cep') IS NULL
+      ALTER TABLE orders ADD cep NVARCHAR(8) NULL;
+    IF COL_LENGTH('orders', 'shipping') IS NULL
+      ALTER TABLE orders ADD shipping DECIMAL(10,2) NOT NULL CONSTRAINT DF_orders_shipping DEFAULT 0 WITH VALUES;
+    IF COL_LENGTH('orders', 'coupon_code') IS NULL
+      ALTER TABLE orders ADD coupon_code NVARCHAR(40) NULL;
+    IF COL_LENGTH('orders', 'discount_amount') IS NULL
+      ALTER TABLE orders ADD discount_amount DECIMAL(10,2) NOT NULL CONSTRAINT DF_orders_discount_amount DEFAULT 0 WITH VALUES;
   `);
 
   const transaction = new sql.Transaction(pool);
@@ -74,11 +83,11 @@ async function createSqlServerRepository(config) {
     provider: 'sqlserver',
     async listProducts() { return (await pool.request().query('SELECT id, name, description, price, image, stock FROM products WHERE catalog_visible = 1 ORDER BY id')).recordset; },
     async getProduct(id) { return (await pool.request().input('id', sql.Int, id).query('SELECT id, name, description, price, image, stock FROM products WHERE id=@id')).recordset[0]; },
-    async createOrder({ customerName, customerEmail, items }) {
+    async createOrder({ customerName, customerEmail, items, cep, couponCode }) {
       const transaction = new sql.Transaction(pool);
       await transaction.begin();
       try {
-        let total = 0;
+        let subtotal = 0;
         const resolved = [];
         for (const item of items) {
           const result = await new sql.Request(transaction).input('id', sql.Int, item.productId)
@@ -87,13 +96,19 @@ async function createSqlServerRepository(config) {
           if (!product || !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > product.stock) {
             throw Object.assign(new Error('Produto ou quantidade inválida.'), { status: 400 });
           }
-          total += Number(product.price) * item.quantity;
+          subtotal += Number(product.price) * item.quantity;
           resolved.push({ product, quantity: item.quantity });
         }
+        const summary = calculateOrderSummary(subtotal, couponCode, cep);
+        if (summary.shipping === null) throw Object.assign(new Error('Informe um CEP válido para calcular o frete.'), { status: 400 });
         const created = await new sql.Request(transaction)
           .input('name', sql.NVarChar, customerName).input('email', sql.NVarChar, customerEmail)
-          .input('total', sql.Decimal(10, 2), total)
-          .query("INSERT INTO orders (customer_name,customer_email,total,status) OUTPUT INSERTED.id VALUES (@name,@email,@total,N'Recebido')");
+          .input('total', sql.Decimal(10, 2), summary.total)
+          .input('cep', sql.NVarChar(8), cep)
+          .input('shipping', sql.Decimal(10, 2), summary.shipping)
+          .input('couponCode', sql.NVarChar(40), summary.coupon?.code || null)
+          .input('discount', sql.Decimal(10, 2), summary.discount)
+          .query("INSERT INTO orders (customer_name,customer_email,total,cep,shipping,coupon_code,discount_amount,status) OUTPUT INSERTED.id VALUES (@name,@email,@total,@cep,@shipping,@couponCode,@discount,N'Recebido')");
         const orderId = created.recordset[0].id;
         for (const { product, quantity } of resolved) {
           await new sql.Request(transaction).input('orderId', sql.Int, orderId).input('productId', sql.Int, product.id)
@@ -101,7 +116,15 @@ async function createSqlServerRepository(config) {
             .query('INSERT INTO order_items(order_id,product_id,quantity,unit_price) VALUES(@orderId,@productId,@quantity,@price); UPDATE products SET stock=stock-@quantity WHERE id=@productId');
         }
         await transaction.commit();
-        return { id: orderId, total: Number(total.toFixed(2)), status: 'Recebido' };
+        return {
+          id: orderId,
+          subtotal: summary.products,
+          discount: summary.discount,
+          shipping: summary.shipping,
+          couponCode: summary.coupon?.code || null,
+          total: summary.total,
+          status: 'Recebido'
+        };
       } catch (error) { await transaction.rollback(); throw error; }
     },
     async health() { await pool.request().query('SELECT 1 AS ok'); return true; },

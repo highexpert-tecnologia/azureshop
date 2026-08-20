@@ -21,6 +21,10 @@ BEGIN
     customer_name  NVARCHAR(120) NOT NULL,
     customer_email NVARCHAR(200) NOT NULL,
     total          DECIMAL(10,2) NOT NULL,
+    cep            NVARCHAR(8) NULL,
+    shipping       DECIMAL(10,2) NOT NULL DEFAULT 0,
+    coupon_code    NVARCHAR(40) NULL,
+    discount_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
     status         NVARCHAR(30)  NOT NULL DEFAULT N'Recebido',
     created_at     DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
   );
@@ -42,6 +46,18 @@ IF COL_LENGTH('products', 'catalog_visible') IS NULL
 
 IF COL_LENGTH('products', 'image') < 510
   ALTER TABLE products ALTER COLUMN image NVARCHAR(255) NOT NULL;
+
+IF COL_LENGTH('orders', 'cep') IS NULL
+  ALTER TABLE orders ADD cep NVARCHAR(8) NULL;
+
+IF COL_LENGTH('orders', 'shipping') IS NULL
+  ALTER TABLE orders ADD shipping DECIMAL(10,2) NOT NULL CONSTRAINT DF_orders_shipping DEFAULT 0 WITH VALUES;
+
+IF COL_LENGTH('orders', 'coupon_code') IS NULL
+  ALTER TABLE orders ADD coupon_code NVARCHAR(40) NULL;
+
+IF COL_LENGTH('orders', 'discount_amount') IS NULL
+  ALTER TABLE orders ADD discount_amount DECIMAL(10,2) NOT NULL CONSTRAINT DF_orders_discount_amount DEFAULT 0 WITH VALUES;
 
 DECLARE @catalog TABLE (
   name NVARCHAR(120) NOT NULL,

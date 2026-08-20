@@ -3,6 +3,7 @@ const express = require('express');
 const helmet = require('helmet');
 const config = require('./config');
 const aiClient = require('./ai/client');
+const { calculateShipping, getCoupon, normalizeCep } = require('../public/checkout-utils');
 
 function createApp(repository) {
   const app = express();
@@ -21,11 +22,25 @@ function createApp(repository) {
   });
   app.post('/api/orders', async (req, res, next) => {
     try {
-      const { customerName, customerEmail, items } = req.body;
+      const { customerName, customerEmail, items, couponCode } = req.body;
       if (!customerName?.trim() || !/^\S+@\S+\.\S+$/.test(customerEmail || '') || !Array.isArray(items) || !items.length) {
         return res.status(400).json({ error: 'Informe nome, e-mail válido e ao menos um item.' });
       }
-      const order = await repository.createOrder({ customerName: customerName.trim(), customerEmail: customerEmail.trim(), items });
+      const cep = normalizeCep(req.body.cep);
+      if (calculateShipping(cep) === null) {
+        return res.status(400).json({ error: 'Informe um CEP válido para calcular o frete.' });
+      }
+      const normalizedCoupon = typeof couponCode === 'string' ? couponCode.trim() : '';
+      if (normalizedCoupon && !getCoupon(normalizedCoupon)) {
+        return res.status(400).json({ error: 'Cupom inválido ou expirado.' });
+      }
+      const order = await repository.createOrder({
+        customerName: customerName.trim(),
+        customerEmail: customerEmail.trim(),
+        items,
+        cep,
+        couponCode: getCoupon(normalizedCoupon)?.code || null
+      });
       res.status(201).json(order);
     } catch (error) { next(error); }
   });

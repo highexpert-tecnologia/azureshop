@@ -36,12 +36,31 @@
   <aside id="cart" class="drawer" aria-hidden="true">
     <div class="drawer-head"><h2>Seu Carrinho</h2><button id="close-cart" aria-label="Fechar">×</button></div>
     <div id="cart-items" class="cart-items"></div>
-    <div class="total"><span>Total</span><strong id="cart-total">R$ 0,00</strong></div>
+    <section class="order-summary" aria-labelledby="summary-title">
+      <h3 id="summary-title">Resumo do pedido</h3>
+      <div class="summary-row"><span>Produtos</span><strong id="summary-subtotal">R$ 0,00</strong></div>
+      <form id="coupon-form" class="coupon-form">
+        <label for="coupon-code">Cupom de desconto</label>
+        <div><input id="coupon-code" name="couponCode" placeholder="Digite seu cupom" autocomplete="off"><button type="submit">Aplicar</button></div>
+      </form>
+      <p id="coupon-message" class="checkout-feedback" role="status"></p>
+      <div id="applied-coupon" class="applied-coupon" hidden><span id="applied-coupon-code"></span><button type="button" id="remove-coupon">Remover cupom</button></div>
+      <div id="discount-row" class="summary-row discount-row" hidden><span id="discount-label">Desconto</span><strong id="discount-value">- R$ 0,00</strong></div>
+      <div class="shipping-section">
+        <label for="postal-code">CEP</label>
+        <div class="cep-input"><input id="postal-code" name="cep" inputmode="numeric" autocomplete="postal-code" maxlength="9" placeholder="00000-000"></div>
+        <p id="cep-message" class="checkout-feedback" role="status"></p>
+        <div class="summary-row shipping-row"><span id="shipping-label">Frete</span><strong id="shipping-value">Calcular</strong></div>
+        <button type="button" id="change-cep" class="text-button" hidden>Alterar CEP</button>
+      </div>
+      <div class="total"><span>Total</span><strong id="cart-total">R$ 0,00</strong></div>
+    </section>
     <form id="checkout-form"><label>Nome<input name="customerName" required autocomplete="name"></label><label>E-mail<input name="customerEmail" type="email" required autocomplete="email"></label><button class="primary" type="submit">Finalizar pedido</button></form>
     <p id="checkout-message" role="status"></p>
   </aside>
   <div id="overlay" class="overlay"></div>
   <footer><strong>AzureShop</strong><span>Aplicação didática · Imersão Arquiteto Azure — Cloud & AI</span><a href="/api/health">Saúde da API</a></footer>
+  <script src="/checkout-utils.js" defer></script>
   <script src="/app.js" defer></script>
 </body>
 </html>

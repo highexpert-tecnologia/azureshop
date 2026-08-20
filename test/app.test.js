@@ -26,7 +26,13 @@ async function withServer(fn) { const server = createApp(repository()).listen(0)
 test('health informa o estado da aplicação', () => withServer(async (url) => { const res = await fetch(`${url}/api/health`); assert.equal(res.status, 200); assert.equal((await res.json()).status, 'ok'); }));
 test('catálogo retorna produtos', () => withServer(async (url) => { const res = await fetch(`${url}/api/products`); assert.equal((await res.json())[0].name, 'Caderno AI'); }));
 test('pedido inválido é rejeitado', () => withServer(async (url) => { const res = await fetch(`${url}/api/orders`, { method:'POST', headers:{'content-type':'application/json'}, body:'{}' }); assert.equal(res.status, 400); }));
-test('pedido válido é criado', () => withServer(async (url) => { const res = await fetch(`${url}/api/orders`, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({customerName:'Aluno',customerEmail:'aluno@example.com',items:[{productId:1,quantity:1}]}) }); assert.equal(res.status, 201); assert.equal((await res.json()).id, 42); }));
+test('pedido válido é criado', () => withServer(async (url) => { const res = await fetch(`${url}/api/orders`, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({customerName:'Aluno',customerEmail:'aluno@example.com',cep:'01310-100',couponCode:'arquitetoazure10',items:[{productId:1,quantity:1}]}) }); assert.equal(res.status, 201); assert.equal((await res.json()).id, 42); }));
+test('pedido rejeita CEP ou cupom inválido', () => withServer(async (url) => {
+  const invalidCep = await fetch(`${url}/api/orders`, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({customerName:'Aluno',customerEmail:'aluno@example.com',cep:'123',items:[{productId:1,quantity:1}]}) });
+  assert.equal(invalidCep.status, 400);
+  const invalidCoupon = await fetch(`${url}/api/orders`, { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({customerName:'Aluno',customerEmail:'aluno@example.com',cep:'01310-100',couponCode:'CUPOMINVALIDO',items:[{productId:1,quantity:1}]}) });
+  assert.equal(invalidCoupon.status, 400);
+}));
 test('catálogo oficial contém exatamente oito produtos com imagens locais', async () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'azure-shop-'));
   const repository = createSqliteRepository(path.join(directory, 'loja.db'));
@@ -53,3 +59,31 @@ test('imagens do catálogo são servidas sem 404', () => withServer(async (url) 
     assert.match(response.headers.get('content-type'), /^image\/png/);
   }
 }));
+
+test('pedido persiste subtotal, desconto e frete calculados no servidor', async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'azure-shop-order-'));
+  const repository = createSqliteRepository(path.join(directory, 'loja.db'));
+  try {
+    const [product] = await repository.listProducts();
+    const order = await repository.createOrder({
+      customerName: 'Aluno',
+      customerEmail: 'aluno@example.com',
+      cep: '01310100',
+      couponCode: 'arquitetoazureexpert30',
+      items: [{ productId: product.id, quantity: 2 }]
+    });
+    assert.deepEqual(order, {
+      id: 1,
+      subtotal: 499.8,
+      discount: 149.94,
+      shipping: 13.9,
+      couponCode: 'ARQUITETOAZUREEXPERT30',
+      total: 363.76,
+      status: 'Recebido'
+    });
+    assert.equal((await repository.getProduct(product.id)).stock, product.stock - 2);
+  } finally {
+    await repository.close();
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
