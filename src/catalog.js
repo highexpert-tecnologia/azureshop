@@ -48,10 +48,16 @@ const PRODUCT_CATALOG = Object.freeze([
   },
   {
     name: 'Camiseta Pós-Graduação Arquitetura de Azure com AI',
-    legacyName: 'Camiseta Microsoft Certified Expert',
     description: 'Camiseta exclusiva da Pós-Graduação Arquitetura de Azure com AI.',
     price: 119.9,
     image: '/products/camiseta_tech_azure_com_design_futurista.png',
+    stock: 25
+  },
+  {
+    name: 'Camiseta Microsoft Certified Expert',
+    description: 'Camiseta Microsoft Certified Expert.',
+    price: 119.9,
+    image: '/products/Camiseta_Microsoft_Certified_Expert.png',
     stock: 25
   }
 ]);

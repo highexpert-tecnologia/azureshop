@@ -59,7 +59,8 @@ INSERT INTO @catalog (name, legacy_name, description, price, image, stock) VALUE
   (N'Caderno Pós-Graduação Arquitetura de Azure com AI', N'Caderno Azure Architect & AI', N'Caderno premium para projetos, diagramas, estudos e Arquiteturas Azure com AI.', 54.90, N'/products/caderno_azure_com_ai_e_caneta_premium.png', 50),
   (N'Camiseta Azure Expert', NULL, N'Camiseta exclusiva Azure Expert para profissionais que vivem Cloud e Azure.', 119.90, N'/products/camiseta_azure_expert_tech.png', 25),
   (N'Camiseta Mentoria Arquiteto Azure', N'Camiseta Azure Architect', N'Camiseta exclusiva da Mentoria Arquiteto Azure.', 119.90, N'/products/mockup_de_camiseta_arquiteto_azure.png', 25),
-  (N'Camiseta Pós-Graduação Arquitetura de Azure com AI', N'Camiseta Microsoft Certified Expert', N'Camiseta exclusiva da Pós-Graduação Arquitetura de Azure com AI.', 119.90, N'/products/camiseta_tech_azure_com_design_futurista.png', 25);
+  (N'Camiseta Pós-Graduação Arquitetura de Azure com AI', NULL, N'Camiseta exclusiva da Pós-Graduação Arquitetura de Azure com AI.', 119.90, N'/products/camiseta_tech_azure_com_design_futurista.png', 25),
+  (N'Camiseta Microsoft Certified Expert', NULL, N'Camiseta Microsoft Certified Expert.', 119.90, N'/products/Camiseta_Microsoft_Certified_Expert.png', 25);
 
 UPDATE products SET catalog_visible = 0;
 
