@@ -511,7 +511,7 @@ flowchart LR
    | `DB_PROVIDER` | `sqlserver` |
    | `AZURE_SQL_SERVER` | `[servidor].database.windows.net` |
    | `AZURE_SQL_DATABASE` | `imersao` |
-   | `AZURE_SQL_USER` | `[definir]` |
+   | `AZURE_SQL_USER` | `azureshop` |
    | `AZURE_SQL_PASSWORD` | referência segura ou `[definir]` |
 
 11. Reinicie o App Service se o Portal solicitar.
