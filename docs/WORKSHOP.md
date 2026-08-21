@@ -127,6 +127,7 @@ Estes valores são necessários para a criação real e não devem ser inventado
 | Região e desenho regional | 1, 4–12 | **East US** no Portal e em `terraform.tfvars` local. | SKUs, quota e modelo de IA aparecem como disponíveis na região. | Use o ambiente de demonstração se a região, SKU ou quota não estiver disponível. |
 | IP/CIDR público autorizado | 2 e 5 | Regra NSG/firewall pelo Portal, usando o CIDR autorizado para a turma. | A origem autorizada alcança apenas as portas previstas; não há regra com `Any`/`*`. | Mantenha regras fechadas e faça a demonstração pelo ambiente autorizado. |
 | Senha da VM e senha administrativa do SQL | 2, 5, 7, 10 e 12 | Digite no Portal ou em sessão segura do Cloud Shell quando o fluxo solicitar. | Conexão SSH/SQL funciona sem a senha aparecer em saída, arquivo, YAML, state, Git ou chat. | Não crie o recurso até existir um canal seguro; não reutilize a senha fora deste laboratório. |
+| Tamanho da VM do Lab 3 | 3 | Portal, depois de selecionar East US, ou Cloud Shell com `az vm list-skus --location eastus --resource-type virtualMachines`. | O tamanho aparece como disponível e a validação de criação não informa indisponibilidade. | Escolha outra SKU aprovada somente após validar capacidade; não fixe um tamanho no material. |
 | Nome e prefixo da subnet exclusiva de VNet Integration | 7 | Portal no Dia 1: `snet-appservice-integration` e `10.10.3.0/24`. | Prefixo não sobrepõe `snet-aplicacao` `10.10.1.0/24` nem `snet-dados` `10.10.2.0/24`; subnet está delegada a `Microsoft.Web/serverFarms`. | Não habilite VNet Integration até que a subnet dedicada seja definida. |
 | Modelo, versão, capacidade e quota de IA | 11 | Portal/Foundry e configuração local aprovada. | Deployment termina em `Succeeded`; métricas/quota permitem a chamada de teste. | Use recurso/deployment de demonstração; não crie recurso paralelo para contornar quota. |
 
@@ -136,7 +137,7 @@ Estes valores são necessários para a criação real e não devem ser inventado
 |---|---|---|---|
 | 1 | Assinatura, RBAC, East US, tags e Modelo A estão aprovados. | RG, região ou proprietário de custo não estão confirmados. | Confirme o contexto pelo Portal; não crie RG até decidir o modelo. |
 | 2 | CIDR autorizado e método SSH seguro estão definidos. | A única opção seria abrir SSH/app para `Any` ou `*`. | Restrinja o CIDR ou use a demonstração; não abra a regra. |
-| 3 | Repositório, VS Code, Git e Copilot estão autenticados. | O Copilot não está disponível ou há segredo no contexto. | Corrija login; remova dados sensíveis antes de analisar. |
+| 3 | Repositório, VS Code, Git e Copilot estão autenticados; tamanho da VM foi validado para East US. | O Portal ou `az vm create` retorna `SkuNotAvailable`, ou o Copilot não está disponível. | Capacidade regional é dinâmica: valide tamanho/região/zona, escolha uma SKU aprovada disponível ou use a demonstração. Não registre nem reutilize o identificador de rastreamento do erro. |
 | 4 | Plano/SKU e método de publicação foram aprovados. | Runtime, custo ou nome global do App Service não foram validados. | Verifique no Portal; use nome/sufixo novo e pare antes de criar se houver conflito. |
 | 5 | Senha SQL segura e SKU/região estão aprovados. | A senha precisaria ir para arquivo versionado, chat ou log. | Use variável efêmera/Key Vault aprovado ou interrompa o lab. |
 | 6 | `snet-dados` está exclusiva e SQL existe. | DNS/Private Endpoint apontaria para VNet/subnet errada. | Corrija a seleção antes de criar; confirme estado `Approved` e zone group. |
@@ -153,6 +154,7 @@ Estes valores são necessários para a criação real e não devem ser inventado
 - **Cloud Shell:** execute um comando por etapa e confirme o retorno antes do próximo. Para Terraform, `plan` é checkpoint obrigatório; para AKS e Deployments, acompanhe o estado/rollout até a conclusão ou erro.
 - **Terraform:** mantenha `terraform.tfvars`, state e arquivos de plano fora do Git. Se o plano listar recursos manuais como novos, não execute apply: isso é sintoma de colisão de estado, não uma etapa de espera.
 - **Quota, RBAC, provider e região:** valide no Portal antes da criação. Se uma permissão, provider, SKU, modelo ou quota não estiver disponível, registre o bloqueio, mantenha o ambiente inalterado e use a contingência aprovada pelo instrutor.
+- **Capacidade de VM:** uma SKU exibida na documentação não garante capacidade no momento da criação. Antes do Lab 3, confira os tamanhos para East US no Portal ou execute `az vm list-skus --location eastus --resource-type virtualMachines`. Se `az vm create` retornar `SkuNotAvailable`, a causa é capacidade regional; pare, valide outra SKU, região ou zona aprovada e tente novamente somente após a confirmação. Exemplos possíveis, nunca presumidos: `Standard_B1s`, `Standard_B1ms`, `Standard_B2ms` ou `Standard_D2als_v7`.
 - **Custo:** antes de cada recurso cobrado, confira SKU e estimativa no Portal. Nós AKS, App Service, SQL, Private Endpoint, ACR, IA, logs e armazenamento do Cloud Shell podem gerar custo; não há tempo de espera ou valor de cobrança presumido neste guia.
 
 ## 2. Introdução da Imersão
@@ -381,6 +383,19 @@ flowchart TB
 - Laboratórios 1 e 2 concluídos.
 - Repositório AzureShop clonado e aberto no VS Code.
 - GitHub Copilot instalado, autenticado e ativo no VS Code.
+- Tamanho da VM validado para **East US** no Portal ou pelo Cloud Shell. Não use uma SKU fixada no roteiro: a capacidade é dinâmica.
+
+**Checkpoint de capacidade da VM:**
+
+1. No Portal, ao criar a VM, selecione **East US** e confirme que o tamanho aparece como disponível antes de avançar.
+2. Como apoio no Cloud Shell, consulte os tamanhos anunciados:
+
+   ```bash
+   az vm list-skus --location eastus --resource-type virtualMachines -o table
+   ```
+
+3. Escolha somente uma SKU aprovada que passe nessa validação. `Standard_B1s`, `Standard_B1ms`, `Standard_B2ms` e `Standard_D2als_v7` são exemplos a conferir, não uma recomendação nem garantia de capacidade.
+4. Se a criação retornar `SkuNotAvailable`, pare. O sintoma indica falta de capacidade regional naquele momento; teste outro tamanho, região ou zona somente depois de validar a alternativa com o instrutor. Não copie identificadores de rastreamento para documentação, código ou chat.
 
 **Atividade guiada com GitHub Copilot:**
 
