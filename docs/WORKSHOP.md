@@ -10,6 +10,7 @@
    5. [Checklist de 20 minutos antes da aula](#checklist-de-20-minutos-antes-da-aula)
    6. [Matriz de cobertura dos laboratórios](#matriz-de-cobertura-dos-laboratórios)
    7. [Bloqueios conhecidos e como resolver](#bloqueios-conhecidos-e-como-resolver)
+   8. [Modo de validação do instrutor](#modo-de-validação-do-instrutor)
 2. [Introdução da Imersão](#2-introdução-da-imersão)
    1. [Camadas lógicas da AzureShop](#camadas-lógicas-da-azureshop)
    2. [Workflow de alto nível](#workflow-de-alto-nível)
@@ -36,7 +37,7 @@
 
 ## 1. Antes de começar — requisitos mínimos
 
-O caminho oficial desta imersão usa **Portal do Azure + Azure Cloud Shell (Bash)** para as ações Azure, CLI e Terraform. Assim, você não precisa instalar Azure CLI, Terraform, Docker ou `kubectl` localmente. Você precisa, porém, chegar com o projeto clonado, VS Code e GitHub Copilot prontos para que todos os laboratórios sejam executáveis de ponta a ponta.
+O caminho oficial desta imersão usa **Portal do Azure + Azure Cloud Shell (Bash)** para as ações Azure, CLI e Terraform. Assim, você não precisa instalar Azure CLI, Terraform, Docker ou `kubectl` localmente. Você precisa, porém, chegar com o projeto clonado, VS Code e GitHub Copilot prontos para seguir os laboratórios. A criação real depende de capacidade, quota, região, RBAC e orçamento confirmados no momento da aula.
 
 ### O que é obrigatório
 
@@ -105,6 +106,54 @@ O caminho oficial desta imersão usa **Portal do Azure + Azure Cloud Shell (Bash
 | 12 | Labs 9–10, Cloud Shell | Imagem ACR, rollout e app saudável | Use ACR Build; não crie Deployment paralelo e revise custos do cluster. |
 
 > **Segurança e custos:** trabalhe apenas na assinatura autorizada. Em dúvida sobre RBAC, quota, cobrança, storage do Cloud Shell ou alteração de recurso, pare e confirme com o instrutor.
+
+### Modo de validação do instrutor
+
+Use este modo antes da aula para comprovar o roteiro **sem criar, alterar, aplicar ou publicar recursos**. Ele é o caminho padrão quando a turma ainda não tem capacidade/quota confirmada ou quando não é aceitável gerar custo adicional.
+
+1. Rode o preflight read-only a partir do checkout:
+
+   ```bash
+   bash scripts/preflight-workshop-readonly.sh
+   ```
+
+   O script usa somente consultas `az`: mostra conta/assinatura, providers, SKUs de VM, uso de compute, catálogo de regiões App Service, versões AKS e estado do provider de IA. Ele não contém `create`, `update`, `delete`, `apply`, `deploy`, `build` ou comandos de dados com credenciais.
+
+2. Faça o roteiro no Portal sem selecionar **Create**: confirme tela, campos, SKU, estimativa, RBAC, provider, região e dependências de cada laboratório.
+3. Para Terraform, use apenas `init`, `fmt`, `validate` e `plan`; não execute `apply` neste modo.
+4. Para Kubernetes, leia manifests e valide nomes/health checks. Não rode `kubectl apply`, ACR Build, rollout ou testes que criem pods.
+5. Registre o resultado como **go**, **go com ambiente compartilhado** ou **no-go**, sem prometer que a mesma capacidade existirá na aula.
+
+#### Preflight e checklist pré-aula do instrutor
+
+- [ ] Confirmar subscription, tenant, RBAC e budget/alerta de custo antes de abrir a turma.
+- [ ] Testar a combinação **subscription + região** com antecedência; resultados de uma subscription ou de outro horário não garantem capacidade atual.
+- [ ] Consultar tamanho de VM antes do Lab 3. No teste atual em East US, entre as SKUs avaliadas, `Standard_D2als_v7` retornou `restrictions=[]`; valide novamente antes de usar.
+- [ ] Consultar capacidade/quota do App Service antes do Lab 4. Na subscription atualmente validada, a quota para **B1** foi insuficiente; não use B1 como premissa. Escolha região/SKU/subscription aprovada ou use ambiente do instrutor.
+- [ ] Confirmar SKU/custo do SQL, Private Endpoint e capacidade de modelo/IA antes de qualquer criação.
+- [ ] Confirmar quota e disponibilidade do AKS/ACR antes do Dia 2. Não exija AKS individual de todos os alunos sem essa validação.
+- [ ] Manter um ambiente demonstrativo saudável, com acesso e custo revisados, para a turma quando quota, capacidade ou RBAC bloquearem a criação individual.
+- [ ] Definir o caminho da turma: **aluno** revisa Portal, `plan`, manifests e evidências; **ambiente compartilhado** demonstra criação, rede, rollout e validações que dependam de capacidade.
+- [ ] Guardar evidências não sensíveis: saída do preflight, screenshots de quota/SKU, `terraform plan` revisado e estados de provisionamento.
+
+#### Matriz de aceite por laboratório
+
+| Lab | Pré-requisito | Ação esperada no modo read-only | Evidência de sucesso | Falha comum | Contingência | Custo/quota |
+|---|---|---|---|---|---|---|
+| 1 | Assinatura, RBAC e região escolhida | Conferir subscription, policy, tags e tela do RG sem criar. | Conta correta, permissões e orçamento confirmados. | Subscription/RBAC incorreto. | Usar subscription/ambiente do instrutor. | RG não é o custo principal; recursos posteriores são. |
+| 2 | Lab 1 aceito e CIDR autorizado | Revisar VNet, prefixes, NSG e regra SSH no Portal/manifesto. | `10.10.0.0/16` e três subnets sem sobreposição; regra restrita. | CIDR amplo ou prefixos conflitantes. | Simular no Portal e usar diagrama. | Rede básica tem baixo impacto; regra ampla é risco. |
+| 3 | VS Code, Git e Copilot autenticados | Rodar preflight de SKU e revisar código/modernização. | SKU consultada; runtime, health check e estado local identificados. | `SkuNotAvailable` ou Copilot sem login. | Outra SKU/região/zona aprovada ou ambiente demonstrativo. | VM consome enquanto alocada; capacidade é dinâmica. |
+| 4 | Lab 3 aceito e quota App Service conferida | Revisar criação do plano/App Service e configurações não secretas sem criar. | Runtime Node, health check e método de deploy confirmados. | Quota B1 insuficiente ou SKU não disponível. | SKU/região/subscription aprovada ou ambiente compartilhado. | Plano App Service gera cobrança; não assumir B1 disponível. |
+| 5 | Lab 4 aceito e canal seguro para senha | Revisar servidor, database, schema e configuração segura. | SKU/região/custo e método de schema validados. | Senha em arquivo/chat ou SKU indisponível. | Demonstração do instrutor e schema revisado localmente. | SQL cobra por SKU/armazenamento. |
+| 6 | VNet e SQL planejados | Revisar PE `sqlServer`, subnet de dados e DNS privado. | Seleção de subnet, zone group e hostname normal confirmados. | PE na subnet errada ou DNS sem vínculo. | Portal demonstrativo/diagrama e checklist. | Private Endpoint pode gerar cobrança. |
+| 7 | Subnet delegada e App Service compatível | Revisar VNet Integration, DNS e regra TCP 1433. | Subnet exclusiva/delegada e fluxo restrito documentados. | Reuso de `snet-dados` ou SKU incompatível. | Ambiente compartilhado; não abrir NSG amplamente. | App Service/PE e tráfego dependem de SKU. |
+| 8 | Checkout e Cloud Shell | Executar `init`, `fmt`, `validate` e `plan` somente. | Plano não recria recursos do Dia 1. | `plan` propõe recursos manuais. | Corrigir identificadores/data sources e repetir. | `plan` não cria custo; state local não deve ser publicado. |
+| 9 | Lab 8 aceito; quota AKS/ACR confirmada | Revisar plano da fase 1 e manifests, sem `apply`. | Plano contém apenas ACR, AKS e `AcrPull`. | Quota, SKU ou RBAC de AKS/ACR. | Ambiente compartilhado; aluno observa plano/manifests. | AKS/ACR geram custo; não presumir cluster individual. |
+| 10 | Desenho de VNets/PE/DNS do Lab 9 disponível | Revisar plano da fase 2 e fluxo DNS/TCP, sem `apply`/pod. | Dois peerings, link DNS e regra restrita previstos. | Prefixos sobrepostos ou dados da VNet AKS ausentes. | Diagrama, plano revisado e ambiente compartilhado. | Rede/PE podem gerar cobrança. |
+| 11 | Provider, modelo, região e quota investigados | Consultar recursos/deployments existentes e revisar identidade. | Provider registrado, capacidade e uso seguro documentados. | Modelo/quota/capacidade indisponível. | Playground ou recurso demonstrativo aprovado. | IA cobra por modelo/capacidade/uso. |
+| 12 | ACR/AKS demonstrativo ou plano revisado | Revisar Dockerfile, manifests, probes e sequência de rollout sem executar. | Tag, `/api/health`, ConfigMap e mecanismo seguro de segredo conferidos. | Placeholder, Secret inseguro ou cluster indisponível. | Ambiente compartilhado ou leitura de manifests/logs existentes. | Build, registry, cluster e exposição podem gerar cobrança. |
+
+> **Regra operacional:** a matriz comprova que o laboratório é reproduzível e que existe uma contingência; ela não garante que recursos pagos ou capacidade regional estejam disponíveis para cada aluno no momento da execução.
 
 ### Bloqueios conhecidos e como resolver
 
