@@ -127,7 +127,7 @@ Estes valores são necessários para a criação real e não devem ser inventado
 | Região e desenho regional | 1, 4–12 | **East US** no Portal e em `terraform.tfvars` local. | SKUs, quota e modelo de IA aparecem como disponíveis na região. | Use o ambiente de demonstração se a região, SKU ou quota não estiver disponível. |
 | IP/CIDR público autorizado | 2 e 5 | Regra NSG/firewall pelo Portal, usando o CIDR autorizado para a turma. | A origem autorizada alcança apenas as portas previstas; não há regra com `Any`/`*`. | Mantenha regras fechadas e faça a demonstração pelo ambiente autorizado. |
 | Senha da VM e senha administrativa do SQL | 2, 5, 7, 10 e 12 | Digite no Portal ou em sessão segura do Cloud Shell quando o fluxo solicitar. | Conexão SSH/SQL funciona sem a senha aparecer em saída, arquivo, YAML, state, Git ou chat. | Não crie o recurso até existir um canal seguro; não reutilize a senha fora deste laboratório. |
-| Tamanho da VM do Lab 3 | 3 | Portal, depois de selecionar East US, ou Cloud Shell com `az vm list-skus --location eastus --resource-type virtualMachines`. | O tamanho aparece como disponível e a validação de criação não informa indisponibilidade. | Escolha outra SKU aprovada somente após validar capacidade; não fixe um tamanho no material. |
+| Tamanho da VM do Lab 3 | 3 | Portal, depois de selecionar East US, ou Cloud Shell com `az vm list-skus --location eastus --resource-type virtualMachines`. | O tamanho aparece como disponível e a validação de criação não informa indisponibilidade. | Escolha outra SKU aprovada somente após validar capacidade; não fixe um tamanho no material. Na validação atual, entre as SKUs avaliadas, somente `Standard_D2als_v7` retornou `restrictions=[]`; isso não é garantia futura. |
 | Nome e prefixo da subnet exclusiva de VNet Integration | 7 | Portal no Dia 1: `snet-appservice-integration` e `10.10.3.0/24`. | Prefixo não sobrepõe `snet-aplicacao` `10.10.1.0/24` nem `snet-dados` `10.10.2.0/24`; subnet está delegada a `Microsoft.Web/serverFarms`. | Não habilite VNet Integration até que a subnet dedicada seja definida. |
 | Modelo, versão, capacidade e quota de IA | 11 | Portal/Foundry e configuração local aprovada. | Deployment termina em `Succeeded`; métricas/quota permitem a chamada de teste. | Use recurso/deployment de demonstração; não crie recurso paralelo para contornar quota. |
 
@@ -394,7 +394,7 @@ flowchart TB
    az vm list-skus --location eastus --resource-type virtualMachines -o table
    ```
 
-3. Escolha somente uma SKU aprovada que passe nessa validação. `Standard_B1s`, `Standard_B1ms`, `Standard_B2ms` e `Standard_D2als_v7` são exemplos a conferir, não uma recomendação nem garantia de capacidade.
+3. Escolha somente uma SKU aprovada que passe nessa validação. Na consulta mais recente entre as SKUs avaliadas, `Standard_D2als_v7` foi a única com `restrictions=[]` em East US; trate isso como resultado momentâneo da validação, não como garantia de capacidade. Confirme novamente antes da criação.
 4. Se a criação retornar `SkuNotAvailable`, pare. O sintoma indica falta de capacidade regional naquele momento; teste outro tamanho, região ou zona somente depois de validar a alternativa com o instrutor. Não copie identificadores de rastreamento para documentação, código ou chat.
 
 **Atividade guiada com GitHub Copilot:**
