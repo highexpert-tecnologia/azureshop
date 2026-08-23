@@ -2,8 +2,8 @@
 # Copie para terraform.tfvars local. NUNCA versione este arquivo, plans ou state.
 # Senhas de VM e SQL pertencem apenas ao Portal ou a uma sessao segura do Cloud Shell.
 
-resource_group_name = "[definir: RG manual do Dia 1]"
-suffix              = "[definir: 3 a 10 caracteres unicos]"
+resource_group_name = "rg-imersao-arquitetoazure"
+suffix              = "azureshop###"
 
 # Identificadores nao secretos coletados no Portal ao concluir o Dia 1.
 portal_vnet_name                 = "vnet-imersao"
