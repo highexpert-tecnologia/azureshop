@@ -27,5 +27,5 @@ aks_node_size  = "Standard_B4ms"  # SKUs suportados: Standard_B4ms, Standard_D2s
 enable_aks_private_connectivity = false
 aks_node_resource_group         = "[definir: aks_node_resource_group]"
 aks_vnet_name                   = "[definir: vnet-name-aks_node_resource_group"]
-aks_vnet_address_prefixes       = "[definir: vnet-addressspace-aks_node_resource_group"]
+aks_vnet_address_prefixes       = ["definir: vnet-addressspace-aks_node_resource_group"]
 aks_sql_nsg_priority            = 1004
