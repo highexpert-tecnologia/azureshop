@@ -1,8 +1,8 @@
 locals {
   tags = {
-    Projeto       = "Imersao-Arquiteto-Azure"
-    Ambiente      = "Workshop"
-    GerenciadoPor = "Terraform-Dia2"
+    project       = "azureshop"
+    company      = "highexpert"
+    managed = "terraform"
   }
 
   acr_name = "acrimersao${var.suffix}"
