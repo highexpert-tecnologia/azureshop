@@ -9,7 +9,7 @@ suffix              = "azureshop###"
 portal_vnet_name                 = "vnet-imersao"
 portal_data_nsg_name             = "nsg-snet-aplicacao"
 portal_data_subnet_name          = "snet-dados"
-portal_sql_server_name           = "[definir: servidor SQL do Dia 1]"
+portal_sql_server_name           = "[definir: servidor SQL do Dia 1 ]" # SEM o sufixo .database.windows.net
 portal_sql_database_name         = "imersao"
 portal_sql_private_dns_zone_name = "privatelink.database.windows.net"
 
