@@ -55,15 +55,15 @@ locals {
 }
 
 resource "azurerm_mssql_server" "this" {
-  name                         = var.server_name
-  resource_group_name          = var.resource_group_name
-  location                     = local.sql_region
-  version                      = "12.0"
-  administrator_login          = var.admin_login
-  administrator_login_password = var.admin_password
-  minimum_tls_version          = "1.2"
+  name                          = var.server_name
+  resource_group_name           = var.resource_group_name
+  location                      = local.sql_region
+  version                       = "12.0"
+  administrator_login           = var.admin_login
+  administrator_login_password  = var.admin_password
+  minimum_tls_version           = "1.2"
   public_network_access_enabled = var.public_network_access
-  tags                         = var.tags
+  tags                          = var.tags
 
   dynamic "azuread_administrator" {
     for_each = var.entra_admin_login != "" && var.entra_admin_object_id != "" ? [1] : []

@@ -536,11 +536,10 @@ O Dia 2 usa o **Modelo A**:
 
    | Variável | Origem |
    |---|---|
-   | `location`, `resource_group_name`, `suffix` | decisão aprovada do Lab 1 |
-   | `portal_vnet_name`, `portal_data_nsg_name`, `portal_data_subnet_prefix` | Lab 2 |
-   | `portal_app_service_name` | Lab 5 |
-   | `portal_sql_server_name` | Lab 6 |
-   | `portal_sql_private_endpoint_name`, `portal_sql_private_dns_zone_name` | Lab 7 |
+   | `resource_group_name`, `suffix` | Resource Group manual e identificador exclusivo do aluno |
+   | `portal_vnet_name`, `portal_data_nsg_name`, `portal_data_subnet_name` | Lab 2 |
+   | `portal_sql_server_name`, `portal_sql_database_name` | Lab 6 |
+   | `portal_sql_private_dns_zone_name` | Lab 7 |
 
    Nunca coloque senha de VM/SQL em `terraform.tfvars`.
 
@@ -562,7 +561,7 @@ O Dia 2 usa o **Modelo A**:
    terraform show -no-color tfplan-inicial
    ```
 
-**Resultado esperado:** data sources encontram os recursos do Dia 1; plano não tenta criar RG, VNet, NSG, App Service, SQL, PE ou DNS.
+**Resultado esperado:** data sources encontram RG, VNet, subnet de dados, NSG, SQL, banco e DNS privado do Dia 1; plano não tenta criá-los.
 
 **Inspeção de variáveis e outputs:**
 
@@ -619,7 +618,7 @@ Antes da fase 1, outputs de ACR/AKS podem ser nulos. Após a fase 1, use `terraf
 
    ```bash
    az aks get-credentials \
-     --resource-group rg-imersao-arquitetoazure \
+     --resource-group "$(terraform output -raw portal_resource_group_name)" \
      --name "[definir: aks_name]" \
      --overwrite-existing
    kubectl get nodes
@@ -655,6 +654,7 @@ Antes da fase 1, outputs de ACR/AKS podem ser nulos. Após a fase 1, use `terraf
    ```hcl
    aks_node_resource_group = "[definir]"
    aks_vnet_name = "[definir]"
+   aks_vnet_address_prefixes = ["[definir: prefixo real da VNet AKS]"]
    enable_aks_private_connectivity = true
    ```
 
