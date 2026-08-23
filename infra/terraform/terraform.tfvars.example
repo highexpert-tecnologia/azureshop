@@ -3,7 +3,7 @@
 # Senhas de VM e SQL pertencem apenas ao Portal ou a uma sessao segura do Cloud Shell.
 
 resource_group_name = "rg-imersao-arquitetoazure"
-suffix              = "azureshop###"
+suffix              = "azureshop#"
 
 # Identificadores nao secretos coletados no Portal ao concluir o Dia 1.
 portal_vnet_name                 = "vnet-imersao"
