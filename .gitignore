@@ -49,5 +49,7 @@ qa/
 preview/
 tmp/
 temp/
-docs/slides/
+# docs/slides/ - NOW TRACKED for workshop presentations
+!docs/slides/*.pptx
 *.pptx
+
