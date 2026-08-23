@@ -8,7 +8,7 @@ variable "node_count" {
 }
 variable "node_size" {
   type    = string
-  default = "Standard_B2s"
+  default = "Standard_B4ms"
 }
 variable "log_analytics_workspace_id" {
   type    = string

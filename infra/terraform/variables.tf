@@ -83,7 +83,7 @@ variable "aks_node_count" {
 variable "aks_node_size" {
   description = "Tamanho do pool inicial do AKS."
   type        = string
-  default     = "Standard_B2s"
+  default     = "Standard_B4ms"
 }
 
 variable "aks_node_resource_group" {
