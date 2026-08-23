@@ -6,11 +6,11 @@ resource_group_name = "[definir: RG manual do Dia 1]"
 suffix              = "[definir: 3 a 10 caracteres unicos]"
 
 # Identificadores nao secretos coletados no Portal ao concluir o Dia 1.
-portal_vnet_name                 = "[definir: VNet manual do Dia 1]"
-portal_data_nsg_name             = "[definir: NSG da subnet de dados]"
-portal_data_subnet_name          = "[definir: subnet de dados]"
-portal_sql_server_name           = "[definir: servidor SQL do Dia 1]"
-portal_sql_database_name         = "[definir: banco SQL do Dia 1]"
+portal_vnet_name                 = "vnet-imersao"
+portal_data_nsg_name             = "nsg-snet-aplicacao"
+portal_data_subnet_name          = "snet-dados"
+portal_sql_server_name           = "[definir: servidor SQL do Dia 1 .database.windows.net]"
+portal_sql_database_name         = "imersao"
 portal_sql_private_dns_zone_name = "privatelink.database.windows.net"
 
 # Fase 1: habilite somente apos os data sources acima serem resolvidos.
