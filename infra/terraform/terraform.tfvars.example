@@ -14,7 +14,7 @@ portal_sql_database_name         = "imersao"
 portal_sql_private_dns_zone_name = "privatelink.database.windows.net"
 
 # Fase 1: habilite somente apos os data sources acima serem resolvidos.
-deploy_acr = false
+deploy_acr = true
 deploy_aks = false
 acr_sku    = "Basic"
 
