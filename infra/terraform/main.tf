@@ -1,8 +1,8 @@
 locals {
   tags = {
-    Projeto       = "Imersao-Arquiteto-Azure"
-    Ambiente      = "Workshop"
-    GerenciadoPor = "Terraform-Dia2"
+    project       = "azureshop"
+    company      = "highexpert"
+    managed = "terraform"
   }
 
   acr_name = "acrimersao${var.suffix}"
@@ -20,13 +20,14 @@ data "azurerm_virtual_network" "portal" {
   resource_group_name = data.azurerm_resource_group.portal.name
 }
 
-data "azurerm_network_security_group" "portal_data" {
-  name                = var.portal_data_nsg_name
-  resource_group_name = data.azurerm_resource_group.portal.name
+data "azurerm_subnet" "portal_data" {
+  name                 = var.portal_data_subnet_name
+  virtual_network_name = data.azurerm_virtual_network.portal.name
+  resource_group_name  = data.azurerm_resource_group.portal.name
 }
 
-data "azurerm_linux_web_app" "portal" {
-  name                = var.portal_app_service_name
+data "azurerm_network_security_group" "portal_data" {
+  name                = var.portal_data_nsg_name
   resource_group_name = data.azurerm_resource_group.portal.name
 }
 
@@ -35,10 +36,9 @@ data "azurerm_mssql_server" "portal" {
   resource_group_name = data.azurerm_resource_group.portal.name
 }
 
-data "azurerm_resources" "portal_sql_private_endpoint" {
-  name                = var.portal_sql_private_endpoint_name
-  resource_group_name = data.azurerm_resource_group.portal.name
-  type                = "Microsoft.Network/privateEndpoints"
+data "azurerm_mssql_database" "portal" {
+  name      = var.portal_sql_database_name
+  server_id = data.azurerm_mssql_server.portal.id
 }
 
 data "azurerm_private_dns_zone" "portal_sql" {
@@ -51,7 +51,7 @@ module "container_registry" {
   source              = "./modules/container-registry"
   count               = var.deploy_acr ? 1 : 0
   resource_group_name = data.azurerm_resource_group.portal.name
-  location            = var.location
+  location            = data.azurerm_resource_group.portal.location
   tags                = local.tags
   acr_name            = local.acr_name
   sku                 = var.acr_sku
@@ -61,7 +61,7 @@ module "aks" {
   source              = "./modules/aks"
   count               = var.deploy_aks ? 1 : 0
   resource_group_name = data.azurerm_resource_group.portal.name
-  location            = var.location
+  location            = data.azurerm_resource_group.portal.location
   tags                = local.tags
   aks_name            = local.aks_name
   node_count          = var.aks_node_count
@@ -84,7 +84,7 @@ data "azurerm_virtual_network" "aks" {
 }
 
 resource "azurerm_virtual_network_peering" "portal_to_aks" {
-  count                        = var.deploy_aks && var.enable_aks_private_connectivity ? 1 : 0
+  count                        = var.enable_aks_private_connectivity ? 1 : 0
   name                         = "peer-imersao-to-aks-${var.suffix}"
   resource_group_name          = data.azurerm_virtual_network.portal.resource_group_name
   virtual_network_name         = data.azurerm_virtual_network.portal.name
@@ -94,7 +94,7 @@ resource "azurerm_virtual_network_peering" "portal_to_aks" {
 }
 
 resource "azurerm_virtual_network_peering" "aks_to_portal" {
-  count                        = var.deploy_aks && var.enable_aks_private_connectivity ? 1 : 0
+  count                        = var.enable_aks_private_connectivity ? 1 : 0
   name                         = "peer-aks-to-imersao-${var.suffix}"
   resource_group_name          = var.aks_node_resource_group
   virtual_network_name         = data.azurerm_virtual_network.aks[0].name
@@ -104,7 +104,7 @@ resource "azurerm_virtual_network_peering" "aks_to_portal" {
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "aks" {
-  count                 = var.deploy_aks && var.enable_aks_private_connectivity ? 1 : 0
+  count                 = var.enable_aks_private_connectivity ? 1 : 0
   name                  = "link-aks-vnet-${var.suffix}"
   resource_group_name   = data.azurerm_resource_group.portal.name
   private_dns_zone_name = data.azurerm_private_dns_zone.portal_sql.name
@@ -114,7 +114,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "aks" {
 }
 
 resource "azurerm_network_security_rule" "aks_to_sql" {
-  count                       = var.deploy_aks && var.enable_aks_private_connectivity ? 1 : 0
+  count                       = var.enable_aks_private_connectivity ? 1 : 0
   name                        = "Allow-AKS-To-SQL-1433"
   priority                    = var.aks_sql_nsg_priority
   direction                   = "Inbound"
@@ -122,15 +122,15 @@ resource "azurerm_network_security_rule" "aks_to_sql" {
   protocol                    = "Tcp"
   source_port_range           = "*"
   destination_port_range      = "1433"
-  source_address_prefixes     = data.azurerm_virtual_network.aks[0].address_space
-  destination_address_prefix  = var.portal_data_subnet_prefix
+  source_address_prefixes     = var.aks_vnet_address_prefixes
+  destination_address_prefix  = data.azurerm_subnet.portal_data.address_prefixes[0]
   resource_group_name         = data.azurerm_network_security_group.portal_data.resource_group_name
   network_security_group_name = data.azurerm_network_security_group.portal_data.name
 
   lifecycle {
     precondition {
-      condition     = var.aks_vnet_name != "" && var.aks_node_resource_group != ""
-      error_message = "Informe a VNet e o Resource Group gerenciado coletados apos a fase 1 do AKS."
+      condition     = var.aks_vnet_name != "" && var.aks_node_resource_group != "" && length(var.aks_vnet_address_prefixes) > 0
+      error_message = "Informe a VNet, o Resource Group gerenciado e os prefixos reais do AKS antes da fase 2."
     }
   }
 }

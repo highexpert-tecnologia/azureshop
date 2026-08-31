@@ -13,14 +13,9 @@ output "portal_sql_server_fqdn" {
   value       = data.azurerm_mssql_server.portal.fully_qualified_domain_name
 }
 
-output "portal_sql_private_endpoint_id" {
-  description = "Private Endpoint manual confirmado pelo Terraform."
-  value       = one(data.azurerm_resources.portal_sql_private_endpoint.resources[*].id)
-}
-
-output "portal_app_service_name" {
-  description = "App Service manual confirmado pelo Terraform."
-  value       = data.azurerm_linux_web_app.portal.name
+output "portal_sql_database_name" {
+  description = "Banco SQL manual do Dia 1 confirmado pelo Terraform."
+  value       = data.azurerm_mssql_database.portal.name
 }
 
 output "acr_name" {

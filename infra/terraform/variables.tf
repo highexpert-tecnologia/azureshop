@@ -4,16 +4,9 @@ variable "subscription_id" {
   default     = ""
 }
 
-variable "location" {
-  description = "Regiao do RG manual e dos recursos novos do Dia 2."
-  type        = string
-  default     = "eastus"
-}
-
 variable "resource_group_name" {
   description = "RG criado manualmente no Portal no Dia 1 e consumido por data sources no Dia 2."
   type        = string
-  default     = "rg-imersao-arquitetoazure"
 }
 
 variable "suffix" {
@@ -29,23 +22,15 @@ variable "suffix" {
 variable "portal_vnet_name" {
   description = "VNet criada pelo Portal no Dia 1."
   type        = string
-  default     = "vnet-imersao"
 }
 
 variable "portal_data_nsg_name" {
   description = "NSG manual associado a snet-dados e usado para liberar somente TCP 1433 do AKS."
   type        = string
-  default     = "nsg-snet-aplicacao"
 }
 
-variable "portal_data_subnet_prefix" {
-  description = "Prefixo da snet-dados manual. Deve corresponder ao Portal e nao incluir outros destinos."
-  type        = string
-  default     = "10.10.2.0/24"
-}
-
-variable "portal_app_service_name" {
-  description = "Nome do App Service criado pelo Portal no Dia 1."
+variable "portal_data_subnet_name" {
+  description = "Subnet de dados manual que contem o Private Endpoint do SQL."
   type        = string
 }
 
@@ -54,8 +39,8 @@ variable "portal_sql_server_name" {
   type        = string
 }
 
-variable "portal_sql_private_endpoint_name" {
-  description = "Nome do Private Endpoint SQL criado pelo Portal no Dia 1."
+variable "portal_sql_database_name" {
+  description = "Nome do banco Azure SQL criado pelo Portal no Dia 1."
   type        = string
 }
 
@@ -98,7 +83,7 @@ variable "aks_node_count" {
 variable "aks_node_size" {
   description = "Tamanho do pool inicial do AKS."
   type        = string
-  default     = "Standard_B2s"
+  default     = "Standard_B4ms"
 }
 
 variable "aks_node_resource_group" {
@@ -111,6 +96,12 @@ variable "aks_vnet_name" {
   description = "Nome da VNet gerenciada do AKS, coletado depois da fase 1 e usado apenas na fase 2."
   type        = string
   default     = ""
+}
+
+variable "aks_vnet_address_prefixes" {
+  description = "Prefixos reais da VNet AKS autorizados para TCP 1433, coletados antes da fase 2."
+  type        = list(string)
+  default     = []
 }
 
 variable "aks_sql_nsg_priority" {
